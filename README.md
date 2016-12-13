@@ -6,12 +6,12 @@
 --------
 ABOUT
 --------
-This is version 2.4.x of the "Speaking assessment" module (sassessment).
+This is version 3.x of the "Speaking assessment" module (sassessment).
 
-2.4.x release is compatible only with Moodle 2.0.
+3.x release is compatible only with Moodle 3.0.
 
 The "sassessment" module is developed by
-    Igor Nikulin, Paul Daniels.
+    Igor Nikulin, Paul Daniels and Nobuhiro Kumai.
 
 This module may be distributed under the terms of the General Public License
 (see http://www.gnu.org/licenses/gpl.txt for details)
