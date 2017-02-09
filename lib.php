@@ -508,7 +508,7 @@ function sassessment_cmp_phon($spoken, $target){
         }
       }
     }
-    $percent=round($score/count($target_obj->words)*100);
+    $percent=round($score/count($spoken_obj->words)*100);
     return array("spoken"=>$spoken_obj,"target"=>$target_obj,"matched"=>$matched,"unmatched"=>$unmatched,"percent"=>$percent);
 }
 
