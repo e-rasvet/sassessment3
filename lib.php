@@ -401,20 +401,20 @@ function sassessment_runExternal( $cmd, &$code ) {
 function sassessment_similar_text($text1, $text2){
   global $CFG;
   
-  make_temp_directory('sassessment/cmp');
+  //make_temp_directory('sassessment/cmp');
   //$tmpdir = $CFG->dirroot . '/mod/sassessment/tmp';
-  $tmpdir = $CFG->tempdir . '/sassessment/cmp';
+  //$tmpdir = $CFG->tempdir . '/sassessment/cmp';
   
-  $name = md5($text1.$text2);
+  //$name = md5($text1.$text2);
   
-  if (is_file($tmpdir."/".$name)) {
-    return file_get_contents($tmpdir."/".$name);
-  } else {
+  ///if (is_file($tmpdir."/".$name)) {
+  //  return file_get_contents($tmpdir."/".$name);
+  //} else {
     $res = sassessment_cmp_phon($text1, $text2);
-    file_put_contents($tmpdir."/".$name, $res['percent']);
+    //file_put_contents($tmpdir."/".$name, $res['percent']);
     
     return $res['percent'];
-  }
+  //}
 
   //$text1 = strtolower(preg_replace("/[^A-Za-z0-9]/",'',$text1));
   //$text2 = strtolower(preg_replace("/[^A-Za-z0-9]/",'',$text2));
@@ -680,7 +680,7 @@ class sassessment_base {
      * @param object $cm usually null, but if we have it we pass it to save db access
      * @param object $course usually null, but if we have it we pass it to save db access
      */
-    function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+    function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
         global $COURSE, $DB;
 
         if ($cmid == 'staticonly') {

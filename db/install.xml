@@ -165,8 +165,19 @@
         <FIELD NAME="file7" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file6" NEXT="file8"/>
         <FIELD NAME="file8" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file7" NEXT="file9"/>
         <FIELD NAME="file9" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file8" NEXT="file10"/>
-        <FIELD NAME="file10" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file9" NEXT="analize"/>
-        <FIELD NAME="analize" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="Text analize" PREVIOUS="file10" NEXT="timecreated"/>
+        <FIELD NAME="file10" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file9" NEXT="per1"/>
+        <FIELD NAME="per1" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file10" NEXT="per2"/>
+        <FIELD NAME="per2" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per1" NEXT="per3"/>
+        <FIELD NAME="per3" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per2" NEXT="per4"/>
+        <FIELD NAME="per4" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per3" NEXT="per5"/>
+        <FIELD NAME="per5" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per4" NEXT="per6"/>
+        <FIELD NAME="per6" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per5" NEXT="per7"/>
+        <FIELD NAME="per7" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per6" NEXT="per8"/>
+        <FIELD NAME="per8" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per7" NEXT="per9"/>
+        <FIELD NAME="per9" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per8" NEXT="per10"/>
+        <FIELD NAME="per10" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per9" NEXT="pertotal"/>
+        <FIELD NAME="pertotal" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="per10" NEXT="analize"/>
+        <FIELD NAME="analize" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="Text analize" PREVIOUS="pertotal" NEXT="timecreated"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="analize"/>
       </FIELDS>
       <KEYS>

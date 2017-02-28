@@ -76,6 +76,12 @@ if ($a == "add" && isset($frm->useranswer) && is_array($frm->useranswer)){
   foreach($frm->useranswer as $k=> $v){
     $add->{'var'.$k}    = $v;
     $text .= $v.". ";
+    
+    if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid"=>$sassessment->id, "iid"=>$k))){
+      if (!empty($v)) {
+        $add->{'per'.$k} = sassessment_similar_text($sampleresponse->text, $v); 
+      }
+    }
   }
   
   $add->timecreated = time();
@@ -127,9 +133,17 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)){
       
       $comparetext_orig    .= $maxtext." ";
       $comparetext_current .= $v." ";
+      
+      if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid"=>$sassessment->id, "iid"=>$k))){
+        if (!empty($v)) {
+          $add->{'per'.$k} = sassessment_similar_text($sampleresponse->text, $v); 
+        }
+      }
     }
   
   $add->analize = json_encode(sassessment_printanalizeform($text));
+  
+  $add->pertotal = round(sassessment_similar_text($comparetext_orig, $comparetext_current));
   
   $add->timecreated = time();
   
@@ -139,8 +153,6 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)){
     $add->id = $frm->sid;
     $DB->update_record("sassessment_studdent_answers", $add);
   }
-  
-  $percent = round(sassessment_similar_text($comparetext_orig, $comparetext_current)); 
   
   $sassessment->cmidnumber = $cm->id;
   
@@ -355,7 +367,7 @@ if ($a == "list") {
               $o .= "&nbsp;".sassessment_splayer($list->{'file'.$i})." &nbsp;";
             
             if ($response = $DB->get_record("sassessment_responses", array("aid"=>$sassessment->id, "iid"=>$i, "rid"=>1))) 
-              $o .= '<span style="color: #0099CC;">'.sassessment_scoreFilter(round(sassessment_similar_text($response->text, $list->{'var'.$i})), $sassessment)."</span> &nbsp;";
+              $o .= '<span style="color: #0099CC;">'.$list->{'per'.$i}."%</span> &nbsp;";
             
             if (!empty($list->{'var'.$i}))
               $o .= '<b>'.get_string("studentanswer", "sassessment").":</b> ".$list->{'var'.$i};
@@ -366,7 +378,7 @@ if ($a == "list") {
               $maxtext = "";
               if ($sampleresponses = $DB->get_records("sassessment_responses", array("aid"=>$sassessment->id, "iid"=>$i))){
                 foreach ($sampleresponses as $sampleresponse) {
-                  $percent = sassessment_similar_text($sampleresponse->text, $list->{'var'.$i}); 
+                  $percent = $list->{'var'.$i}; 
                   if ($maxp < $percent) { $maxi = $i; $maxp = $percent; $maxtext = $sampleresponse->text; }
                 }
               }
@@ -406,15 +418,15 @@ if ($a == "list") {
         $cells = array($cell1, $cell2);
         
         if ($sassessment->textcomparison == 1) {
-          $percent = sassessment_similar_text($comparetext_orig, $comparetext_current); 
+          //$percent = sassessment_similar_text($comparetext_orig, $comparetext_current); 
           //similar_text($comparetext_orig, $comparetext_current, $percent); 
-          $cell3 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>".sassessment_scoreFilter(round($percent), $sassessment)."</b></div>".$comparecurrent);
+          $cell3 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>".$list->pertotal."%</b></div>".$comparecurrent);
           //$cells[] = $cell3;
         }
         
         if ($sassessment->textanalysis == 1) {
           if ($sassessment->textcomparison == 1)
-            $cell4 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>".sassessment_scoreFilter(round($percent), $sassessment)."</b></div>"."<small>".sassessment_analizereport(json_decode($list->analize, true))."</small>");
+            $cell4 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>".$list->pertotal."%</b></div>"."<small>".sassessment_analizereport(json_decode($list->analize, true))."</small>");
           else
             $cell4 = new html_table_cell("<small>".sassessment_analizereport(json_decode($list->analize, true))."</small>");
           
