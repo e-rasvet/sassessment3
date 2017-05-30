@@ -21,8 +21,9 @@
         <FIELD NAME="maxbytes" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="100000" SEQUENCE="false" PREVIOUS="preventlate" NEXT="grademethod"/>
         <FIELD NAME="grademethod" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="grademethod" PREVIOUS="maxbytes" NEXT="transcribe"/>
         <FIELD NAME="transcribe" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="grademethod" NEXT="audio"/>
-        <FIELD NAME="audio" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="transcribe" NEXT="textanalysis"/>
-        <FIELD NAME="textanalysis" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="audio" NEXT="textcomparison"/>
+        <FIELD NAME="audio" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="transcribe" NEXT="autodelete"/>
+        <FIELD NAME="autodelete" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="audio" NEXT="textanalysis"/>
+        <FIELD NAME="textanalysis" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="autodelete" NEXT="textcomparison"/>
         <FIELD NAME="textcomparison" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="textanalysis" NEXT="humanevaluation"/>
         <FIELD NAME="humanevaluation" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="textcomparison" NEXT="var1"/>
         <FIELD NAME="var1" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="humanevaluation" NEXT="var2"/>
@@ -146,16 +147,16 @@
           <FIELD NAME="iid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="aid" NEXT="uid"/>
           <FIELD NAME="uid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="iid" NEXT="summary"/>
         <FIELD NAME="summary" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" ENUM="false" PREVIOUS="uid" NEXT="var1"/>
-        <FIELD NAME="var1" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="summary" NEXT="var2"/>
-        <FIELD NAME="var2" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var1" NEXT="var3"/>
-        <FIELD NAME="var3" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var2" NEXT="var4"/>
-        <FIELD NAME="var4" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var3" NEXT="var5"/>
-        <FIELD NAME="var5" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var4" NEXT="var6"/>
-        <FIELD NAME="var6" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var5" NEXT="var7"/>
-        <FIELD NAME="var7" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var6" NEXT="var8"/>
-        <FIELD NAME="var8" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var7" NEXT="var9"/>
-        <FIELD NAME="var9" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var8" NEXT="var10"/>
-        <FIELD NAME="var10" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"  PREVIOUS="var9" NEXT="file1"/>
+        <FIELD NAME="var1" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="summary" NEXT="var2"/>
+        <FIELD NAME="var2" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var1" NEXT="var3"/>
+        <FIELD NAME="var3" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var2" NEXT="var4"/>
+        <FIELD NAME="var4" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var3" NEXT="var5"/>
+        <FIELD NAME="var5" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var4" NEXT="var6"/>
+        <FIELD NAME="var6" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var5" NEXT="var7"/>
+        <FIELD NAME="var7" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var6" NEXT="var8"/>
+        <FIELD NAME="var8" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var7" NEXT="var9"/>
+        <FIELD NAME="var9" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var8" NEXT="var10"/>
+        <FIELD NAME="var10" TYPE="text" LENGTH="small" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="var9" NEXT="file1"/>
         <FIELD NAME="file1" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="var10" NEXT="file2"/>
         <FIELD NAME="file2" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file1" NEXT="file3"/>
         <FIELD NAME="file3" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="file2" NEXT="file4"/>

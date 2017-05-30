@@ -28,20 +28,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 $PAGE->requires->js('/mod/sassessment/js/jquery.min.js', true);
 
 /**
  * Module instance settings form
  */
-class mod_sassessment_mod_form extends moodleform_mod {
+class mod_sassessment_mod_form extends moodleform_mod
+{
 
     /**
      * Defines forms elements
      */
-    public function definition() {
-        global $CFG;
+    public function definition()
+    {
+        global $CFG, $DB;
 
         $mform = $this->_form;
 
@@ -50,7 +52,7 @@ class mod_sassessment_mod_form extends moodleform_mod {
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Adding the standard "name" field
-        $mform->addElement('text', 'name', get_string('sassessmentname', 'sassessment'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('sassessmentname', 'sassessment'), array('size' => '64'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -62,8 +64,8 @@ class mod_sassessment_mod_form extends moodleform_mod {
 
         // Adding the standard "intro" and "introformat" fields
         $this->standard_intro_elements();
-        
-        
+
+
         $mform->addElement('static', 'label', '', '*Transcription is performed on Google\'s servers. if both: <b>\'transcription\'</b> and <b>\'save audio\'</b> are selected, there is a limit of 10-15 seconds of audio and 50 transcription requests per day. <br /> *Speech recording and transcription will only work with Google Chrome.');
 
         //-------------------------------------------------------------------------------
@@ -76,35 +78,45 @@ class mod_sassessment_mod_form extends moodleform_mod {
         //                      'textcomparison'=>get_string('textcomparison', "sassessment"),
         //                      'humanevaluation'=>get_string('humanevaluation', "sassessment")));
         //$mform->setDefault('grademethod', 'transcribe');
-        
-        $mform->addElement('select', 'grademethod', get_string('grademethod', "sassessment"), 
-                        array('default'=>get_string('default', "sassessment"),
-                              'rubric'=>get_string('rubrics', "sassessment"),
-                              'rubricauto'=>get_string('computerizedgrading', "sassessment")));
+
+        $mform->addElement('select', 'grademethod', get_string('grademethod', "sassessment"),
+            array('default' => get_string('default', "sassessment"),
+                'rubric' => get_string('rubrics', "sassessment"),
+                'rubricauto' => get_string('computerizedgrading', "sassessment")));
         $mform->setDefault('grademethod', 'default');
-        
+
         $mform->addElement('checkbox', 'transcribe', get_string('transcribe', 'sassessment'));
         $mform->addElement('checkbox', 'audio', get_string('audio', 'sassessment'));
         $mform->addElement('checkbox', 'textanalysis', get_string('textanalysis', 'sassessment'));
         //$mform->addElement('checkbox', 'textcomparison', get_string('textcomparison', 'sassessment'));
         //$mform->addElement('checkbox', 'humanevaluation', get_string('humanevaluation', 'sassessment'));
-        
+
         $mform->addElement('hidden', 'textcomparison', 1);
         $mform->setType('textcomparison', PARAM_INT);
         $mform->addElement('hidden', 'humanevaluation', 1);
         $mform->setType('humanevaluation', PARAM_INT);
-        
-        $mform->addElement('select', 'grade', get_string('simplegrade', "sassessment"), array('1'=>'1', '2'=>'2', '3'=>'3', '4'=>'4', '5'=>'5', '6'=>'6', '7'=>'7', '8'=>'8', '9'=>'9', '10'=>'10'));
+
+        $availablefromgroup=array();
+        $availablefromgroup[] =& $mform->createElement('text', 'autodelete', get_string('autodelete', 'sassessment'), array('size' => '5'));
+        $availablefromgroup[] =& $mform->createElement('static', 'label', '', get_string('days', 'sassessment'));
+        $mform->addGroup($availablefromgroup, 'availablefromgroup', get_string('autodelete', 'sassessment'), ' ', false);
+
+        //$mform->addElement('select', 'autodelete', get_string('autodelete', "sassessment"), array('0' => 'No', '3' => '3 ' . get_string('days', "sassessment"), '7' => '7 ' . get_string('days', "sassessment"), '14' => '14 ' . get_string('days', "sassessment"), '30' => '30 ' . get_string('days', "sassessment")));
+        //$mform->addElement('text', 'autodelete', get_string('autodelete', 'sassessment'), array('size' => '5'));
+        $mform->setDefault('autodelete', 0);
+        $mform->setType('autodelete', PARAM_INT);
+
+        $mform->addElement('select', 'grade', get_string('simplegrade', "sassessment"), array('1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10' => '10'));
         $mform->setDefault('grade', 5);
-        
-        $mform->addElement('select', 'scoretype', get_string('scoretype', 'sassessment'), array('0'=>get_string('score', 'sassessment'), '1'=>get_string('textfeedback', 'sassessment')));
+
+        $mform->addElement('select', 'scoretype', get_string('scoretype', 'sassessment'), array('0' => get_string('score', 'sassessment'), '1' => get_string('textfeedback', 'sassessment')));
         $mform->setDefault('scoretype', 0);
-        
+
         $mform->addElement('header', 'sassessmentitemsset', get_string('scoreTexts', 'sassessment'));
-        
+
         $mform->addElement('html', '<div id="scorebox"></div>');
-        
-        $mform->addElement('static', 'label', '', '<div style="float: right;"><a href="#" onclick="addnewscore(); return false;"><img src="'.$CFG->wwwroot.'/mod/sassessment/img/plus.png" title="'.get_string('addscore', 'sassessment').'" alt="'.get_string('addscore', 'sassessment').'" /></a></div><div style="clear:both"></div>');
+
+        $mform->addElement('static', 'label', '', '<div style="float: right;"><a href="#" onclick="addnewscore(); return false;"><img src="' . $CFG->wwwroot . '/mod/sassessment/img/plus.png" title="' . get_string('addscore', 'sassessment') . '" alt="' . get_string('addscore', 'sassessment') . '" /></a></div><div style="clear:both"></div>');
 
         /*
         $buttonarray=array();
@@ -117,27 +129,32 @@ class mod_sassessment_mod_form extends moodleform_mod {
         */
 
         $mform->addElement('header', 'sassessmentitemsset', get_string('itemsandresponses', 'sassessment'));
-        
+
         $mform->addElement('textarea', 'instructions', get_string("instructions", "sassessment"), 'style="width:600px;height:100px;"');
-        
+
         $mform->addElement('html', '<div id="itemsandrespbox"></div>');
-        
+
         //$mform->addElement('textarea', 'var1', 'Item 1', 'wrap="virtual" style="width: 600px;height: 50px;"');
         //$mform->addElement('textarea', 'resp_1_1', 'Sample Response 1', 'wrap="virtual" style="width: 600px;height: 50px;"');
         //$mform->addElement('textarea', 'resp_1_2', 'Sample Response 2', 'wrap="virtual" style="width: 600px;height: 50px;"');
         //$mform->addElement('static', 'label', '', '<div style="float: right;"><a href="#" onclick="addnewresp(1)"><img src="'.$CFG->wwwroot.'/mod/sassessment/img/plus.png" title="'.get_string('addsampleresponse', 'sassessment').'" alt="'.get_string('addsampleresponse', 'sassessment').'" /></a></div><div style="clear:both"></div>');
-        
-        
-        
-        $mform->addElement('static', 'label', '<a href="#" id="addnewitem" onclick="addnewitem();return false;">'.get_string('addanotheritem', 'sassessment').'</a>', '');
-        
-        if(!empty($_GET['update']))
-          $idpost = $_GET['update'];
-        else if(!empty($_GET['course']))
-          $idpost = $_GET['course'].'_'.$_GET['section'];
+
+
+        $mform->addElement('static', 'label', '<a href="#" id="addnewitem" onclick="addnewitem();return false;">' . get_string('addanotheritem', 'sassessment') . '</a>', '');
+
+        if (!empty($_GET['update']))
+            $idpost = $_GET['update'];
+        else if (!empty($_GET['course']))
+            $idpost = $_GET['course'] . '_' . $_GET['section'];
         else
-          $idpost = "";
-        
+            $idpost = "";
+
+        if ($idpost) {
+            $cm = get_coursemodule_from_id('sassessment', $idpost, 0, false, MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+            $sassessment = $DB->get_record('sassessment', array('id' => $cm->instance), '*', MUST_EXIST);
+        }
+
         $mform->addElement('html', '
         <script language="JavaScript">
 (function () {
@@ -172,7 +189,7 @@ class mod_sassessment_mod_form extends moodleform_mod {
           </div>\';
         }
         function addnewresponsebox(Iid){
-          return \'<div class="fitem femptylabel" id="yui_respa_\'+Iid+\'"><div class="fitemtitle"><div class="fstaticlabel"><label> </label></div></div><div class="felement fstatic" id="yui_respb_\'+Iid+\'"><div style="float: right;" id="yui_resps_\'+Iid+\'"><a href="#" onclick="addnewresp(\'+Iid+\');return false;" id="yui_respd_\'+Iid+\'"><img src="'.$CFG->wwwroot.'/mod/sassessment/img/plus.png" title="'.get_string('addsampleresponse', 'sassessment').'" alt="'.get_string('addsampleresponse', 'sassessment').'" id="yui_respe\'+Iid+\'"></a></div><div style="clear:both"></div></div></div>\';
+          return \'<div class="fitem femptylabel" id="yui_respa_\'+Iid+\'"><div class="fitemtitle"><div class="fstaticlabel"><label> </label></div></div><div class="felement fstatic" id="yui_respb_\'+Iid+\'"><div style="float: right;" id="yui_resps_\'+Iid+\'"><a href="#" onclick="addnewresp(\'+Iid+\');return false;" id="yui_respd_\'+Iid+\'"><img src="' . $CFG->wwwroot . '/mod/sassessment/img/plus.png" title="' . get_string('addsampleresponse', 'sassessment') . '" alt="' . get_string('addsampleresponse', 'sassessment') . '" id="yui_respe\'+Iid+\'"></a></div><div style="clear:both"></div></div></div>\';
         }
         
         function addnewscorebox(Iid){
@@ -264,16 +281,16 @@ class mod_sassessment_mod_form extends moodleform_mod {
         $( document ).ready(function() {
           $("#id_submitbutton2").click(function(){
             //var p = postfields();
-            //$.post( "'.$CFG->wwwroot.'/mod/sassessment/saveload.php", { id: "'.$idpost.'", a: "save", p: p}, function( data ) {} );
+            //$.post( "' . $CFG->wwwroot . '/mod/sassessment/saveload.php", { id: "' . $idpost . '", a: "save", p: p}, function( data ) {} );
             //return true;
           });
           $("#id_submitbutton").click(function(){
             //var p = postfields();
-            //$.post( "'.$CFG->wwwroot.'/mod/sassessment/saveload.php", { id: "'.$idpost.'", a: "save", p: p}, function( data ) {} );
+            //$.post( "' . $CFG->wwwroot . '/mod/sassessment/saveload.php", { id: "' . $idpost . '", a: "save", p: p}, function( data ) {} );
             //return true;
           });
           
-          $.get( "'.$CFG->wwwroot.'/mod/sassessment/saveload.php", { id: "'.$idpost.'", a: "loadScore"}, function( data ) {
+          $.get( "' . $CFG->wwwroot . '/mod/sassessment/saveload.php", { id: "' . $idpost . '", a: "loadScore"}, function( data ) {
             if(data) {
               var obj = jQuery.parseJSON(data);
               var i = 0;
@@ -294,7 +311,7 @@ class mod_sassessment_mod_form extends moodleform_mod {
             }
           });
           
-          $.get( "'.$CFG->wwwroot.'/mod/sassessment/saveload.php", { id: "'.$idpost.'", a: "load"}, function( data ) {
+          $.get( "' . $CFG->wwwroot . '/mod/sassessment/saveload.php", { id: "' . $idpost . '", a: "load"}, function( data ) {
             if(data) {
               var obj = jQuery.parseJSON(data);
               $.each(obj.itemd, function(k, v) {
@@ -337,10 +354,10 @@ class mod_sassessment_mod_form extends moodleform_mod {
         }
         </style>
         ');
-        
-        
-        if(empty($_GET['update'])) {
-          $mform->addElement('html', '
+
+
+        if (empty($_GET['update'])) {
+            $mform->addElement('html', '
           <script language="JavaScript">
           $("#itemsandrespbox").append(itembox(1));
           $("#itemsandrespbox").append(respbox(1,1));
@@ -349,17 +366,39 @@ class mod_sassessment_mod_form extends moodleform_mod {
           </script>
           ');
         }
-        
-        
+
+
         /*
         * Upload mp3 
         */
         $mform->addElement('header', 'sassessmentitemsset', get_string('uploadmp3', 'sassessment'));
-        
-        for ($i=1;$i<=10;$i++){
-          $mform->addElement('filepicker', 'submitfile['.$i.']', 'item '.$i.' (Teacher Question/Prompt)', null, array());
-          $mform->addElement('filepicker', 'submitfile2['.$i.']', 'item '.$i.' (Student Response)', null, array());
+        $mform->addElement('static', 'label', '', '<span style="color: #cc3333">*</span> '.get_string('uplodingwilloveriteaudios', 'sassessment'));
+
+        for ($i = 1; $i <= 10; $i++) {
+            if (isset($sassessment->{'file' . $i}) && !empty(($sassessment->{'file' . $i}))) {
+                $mform->addElement('static', 'label', '', '<div style="float: right;">' . get_string('fileexist', 'sassessment') . ' <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'file' . $i} . '&t=file" class="ajax-form-link">' . get_string('delete', 'sassessment') . '</a></div>');
+            }
+
+            $mform->addElement('filepicker', 'submitfile[' . $i . ']', 'item ' . $i . ' (Teacher Question/Prompt)', null, array());
+
+            if (isset($sassessment->{'filesr' . $i}) && !empty(($sassessment->{'filesr' . $i}))) {
+                $mform->addElement('static', 'label', '', '<div style="float: right;">' . get_string('fileexist', 'sassessment') . ' <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'filesr' . $i} . '&t=filesr" class="ajax-form-link">' . get_string('delete', 'sassessment') . '</a></div>');
+            }
+            $mform->addElement('filepicker', 'submitfile2[' . $i . ']', 'item ' . $i . ' (Student Response)', null, array());
         }
+
+        $mform->addElement('html', '
+          <script language="JavaScript">
+          $(".ajax-form-link").click(function() {
+              console.log($(this).attr("data-text"));
+              $.get(  "' . $CFG->wwwroot . '/mod/sassessment/" + $(this).attr("data-text"), function( data ) {
+
+              });
+              $(this).parent().parent().parent().parent().remove();
+
+          });
+          </script>
+          ');
 
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules

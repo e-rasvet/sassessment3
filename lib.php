@@ -94,6 +94,7 @@ function sassessment_add_instance(stdClass $sassessment, mod_sassessment_mod_for
     if (!isset($sassessment->textcomparison)) $sassessment->textcomparison = 0;
     if (!isset($sassessment->humanevaluation)) $sassessment->humanevaluation = 0;
     if (!isset($sassessment->timedue)) $sassessment->timedue = 0;
+    if (!isset($sassessment->autodelete)) $sassessment->autodelete = 0;
     
     for($i=1;$i<=10;$i++){
       if(!empty($_POST['var'.$i])) {
@@ -209,7 +210,8 @@ function sassessment_update_instance(stdClass $sassessment, mod_sassessment_mod_
     if (!isset($sassessment->textcomparison)) $sassessment->textcomparison = 0;
     if (!isset($sassessment->humanevaluation)) $sassessment->humanevaluation = 0;
     if (!isset($sassessment->timedue)) $sassessment->timedue = 0;
-    
+    if (!isset($sassessment->autodelete)) $sassessment->autodelete = 0;
+
     
     for($i=1;$i<=10;$i++){
       if(!empty($_POST['var'.$i])) {
@@ -344,6 +346,37 @@ function sassessment_delete_instance($id) {
  */
  
 function sassessment_cron () {
+    global $DB;
+
+    if ($assessments = $DB->get_records_sql("SELECT * FROM {sassessment} WHERE autodelete > 0")) {
+        foreach ($assessments as $assessment){
+            $time = time() - $assessment->autodelete * 3600 * 24;
+
+            if ($files = $DB->get_records_sql("SELECT * FROM {sassessment_studdent_answers} WHERE timecreated < {$time}")){
+                foreach ($files as $file){
+                    for($i=1;$i<=10;$i++){
+                        if (!empty($file->{'file'.$i})){
+                            $DB->set_field("sassessment_studdent_answers", 'file'.$i, 0, array("id"=>$file->id));
+
+                            if ($subfiles = $DB->get_records("files", array("itemid"=>$file->{'file'.$i}))){
+                                foreach($subfiles as $subfile){
+                                    $fs = get_file_storage();
+
+                                    $file = $fs->get_file($subfile->contextid, $subfile->component, $subfile->filearea,
+                                        $subfile->itemid, $subfile->filepath, $subfile->filename);
+
+                                    if ($file) {
+                                        $file->delete();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     return true;
 }
 

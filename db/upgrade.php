@@ -39,9 +39,79 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_sassessment_upgrade($oldversion) {
-    global $DB;
+    global $CFG, $THEME, $DB;
 
-    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
-    // Final return of upgrade result (true, all went good) to Moodle.
-    return true;
+    $result = true;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2017052600) {
+        // Define table assign_user_mapping to be created.
+        $table = new xmldb_table('sassessment');
+
+        $field = new xmldb_field('autodelete', XMLDB_TYPE_INTEGER, '11', null,
+            XMLDB_NOTNULL, null, '0', 'audio');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('sassessment_studdent_answers');
+        $field = new xmldb_field('var1', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'summary');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var2', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var1');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var3', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var2');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var4', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var3');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var5', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var4');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var6', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var5');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var7', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var6');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var8', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var7');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var9', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var8');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+        $field = new xmldb_field('var10', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'var9');
+
+        // Launch change of type for field grade.
+        $dbman->change_field_type($table, $field);
+
+
+        // Assign savepoint reached.
+        upgrade_mod_savepoint(true, 2017052600, 'sassessment');
+    }
+
+    return $result;
 }

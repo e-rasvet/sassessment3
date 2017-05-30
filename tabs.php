@@ -34,7 +34,8 @@
     //if ($sassessment->timedue == 0 || ($sassessment->timedue > 0 && time() < $sassessment->timedue) || $sassessment->preventlate == 1)
       if ($showaddbutton == 1)
         $row[]  = new tabobject('add', new moodle_url('/mod/sassessment/view.php', array('id'=>$id, 'a'=>'add')), get_string('addnew', 'sassessment'));
-    
+
+    $row[]  = new tabobject('add', new moodle_url('/mod/sassessment/view.php', array('id'=>$id, 'a'=>'summary')), get_string('summary', 'sassessment'));
     
     //$row[]  = new tabobject('history', new moodle_url('/mod/sassessment/viewhistory.php', array('id'=>$id ,'ids'=>$USER->id, 'a'=>'history')), get_string('sassessment_viewhistory', 'sassessment'));
     

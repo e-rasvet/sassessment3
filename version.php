@@ -27,10 +27,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2016091900;      // Requires this Moodle version
+$plugin->version  = 2017052600;      // Requires this Moodle version
 $plugin->requires  = 2015051100;  
 $plugin->release = '3.0.0.1';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->cron      = 0;               // Period for cron to check this module (secs)
+$plugin->cron      = 600;               // Period for cron to check this module (secs)
 $plugin->component = 'mod_sassessment'; // To check on upgrade, that module sits in correct place
 
