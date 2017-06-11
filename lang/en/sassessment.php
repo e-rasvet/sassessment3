@@ -200,6 +200,7 @@ $string['uplodingwilloveriteaudios'] = 'Uploading new audio will overwrite exist
 $string['days'] = 'Days';
 $string['summary'] = 'Summary';
 $string['deleteAudio'] = ' [delete audio]';
+$string['deletecurrentaudio'] = ' [delete current audio]';
 $string['fileexist'] = 'File exist';
 
 $string['sassessment:addinstance']      = 'sassessment:addinstance';
