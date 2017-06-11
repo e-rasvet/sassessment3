@@ -126,6 +126,7 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
 
             $maxp = 0;
             $maxi = 1;
+            $maxtext = "";
 
             if ($sampleresponses = $DB->get_records("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
                 foreach ($sampleresponses as $sampleresponse) {
@@ -142,15 +143,26 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
             $comparetext_current .= $v . " ";
 
             if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
-                if (!empty($v)) {
+                //if (!empty($v)) {
                     $add->{'per' . $k} = sassessment_similar_text($sampleresponse->text, $v);
-                }
+                //}
             }
         }
 
     $add->analize = json_encode(sassessment_printanalizeform($text));
 
-    $add->pertotal = round(sassessment_similar_text($comparetext_orig, $comparetext_current));
+    $total = 0;
+    $c = 0;
+    for ($i=0;$i<=10;$i++){
+        if (isset($add->{'per' . $i})){
+            $c++;
+            $total += $add->{'per' . $i};
+        }
+    }
+
+    $add->pertotal = round($total / $c);
+
+    //$add->pertotal = round(sassessment_similar_text($comparetext_orig, $comparetext_current));
 
     $add->timecreated = time();
 
