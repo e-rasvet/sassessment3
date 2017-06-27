@@ -71,8 +71,8 @@ class mod_sassessment_mod_form extends moodleform_mod
         //-------------------------------------------------------------------------------
         // Adding the rest of sassessment settings, spreeading all them into this fieldset
         // or adding more fieldsets ('header' elements) if needed for better logic
-        //$mform->addElement('select', 'grademethod', get_string('grademethod', "sassessment"), 
-        //                array('transcribe'=>get_string('transcribe', "sassessment"), 
+        //$mform->addElement('select', 'grademethod', get_string('grademethod', "sassessment"),
+        //                array('transcribe'=>get_string('transcribe', "sassessment"),
         //                      'audio'=>get_string('audio', "sassessment"),
         //                      'textanalysis'=>get_string('textanalysis', "sassessment"),
         //                      'textcomparison'=>get_string('textcomparison', "sassessment"),
@@ -149,7 +149,7 @@ class mod_sassessment_mod_form extends moodleform_mod
         else
             $idpost = "";
 
-        if ($idpost) {
+        if (is_number($idpost)) {
             $cm = get_coursemodule_from_id('sassessment', $idpost, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
             $sassessment = $DB->get_record('sassessment', array('id' => $cm->instance), '*', MUST_EXIST);
@@ -369,20 +369,20 @@ class mod_sassessment_mod_form extends moodleform_mod
 
 
         /*
-        * Upload mp3 
+        * Upload mp3
         */
         $mform->addElement('header', 'sassessmentitemsset', get_string('uploadmp3', 'sassessment'));
         $mform->addElement('static', 'label', '', '<span style="color: #cc3333">*</span> '.get_string('uplodingwilloveriteaudios', 'sassessment'));
 
         for ($i = 1; $i <= 10; $i++) {
             if (isset($sassessment->{'file' . $i}) && !empty(($sassessment->{'file' . $i}))) {
-                $mform->addElement('static', 'label', '', '<div style="float: right;">' . get_string('fileexist', 'sassessment') . ' <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'file' . $i} . '&t=file" class="ajax-form-link">' . get_string('delete', 'sassessment') . '</a></div>');
+                $mform->addElement('static', 'label', '', '<div style="float: right;"><div style="float: left;padding-right:10px;">' . sassessment_player($sassessment->{'file' . $i}) . '</div> <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'file' . $i} . '&t=file" class="ajax-form-link">' . get_string('deletecurrentaudio', 'sassessment') . '</a></div><div style="clear:both;"></div>');
             }
 
             $mform->addElement('filepicker', 'submitfile[' . $i . ']', 'item ' . $i . ' (Teacher Question/Prompt)', null, array());
 
             if (isset($sassessment->{'filesr' . $i}) && !empty(($sassessment->{'filesr' . $i}))) {
-                $mform->addElement('static', 'label', '', '<div style="float: right;">' . get_string('fileexist', 'sassessment') . ' <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'filesr' . $i} . '&t=filesr" class="ajax-form-link">' . get_string('delete', 'sassessment') . '</a></div>');
+                $mform->addElement('static', 'label', '', '<div style="float: right;"><div style="float: left;padding-right:10px;">' . sassessment_player($sassessment->{'file' . $i}) . '</div> <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'filesr' . $i} . '&t=filesr" class="ajax-form-link">' . get_string('deletecurrentaudio', 'sassessment') . '</a></div><div style="clear:both;"></div>');
             }
             $mform->addElement('filepicker', 'submitfile2[' . $i . ']', 'item ' . $i . ' (Student Response)', null, array());
         }
