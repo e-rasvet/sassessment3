@@ -713,7 +713,7 @@ class sassessment_base {
      * @param object $cm usually null, but if we have it we pass it to save db access
      * @param object $course usually null, but if we have it we pass it to save db access
      */
-    function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+    public function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
         global $COURSE, $DB;
 
         if ($cmid == 'staticonly') {
@@ -761,6 +761,11 @@ class sassessment_base {
 
     /// Set up things for a HTML editor if it's needed
         $this->defaultformat = editors_get_preferred_format();
+    }
+    
+    
+    public function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+        self::__construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL);
     }
 
     /**
