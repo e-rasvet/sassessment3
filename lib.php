@@ -713,7 +713,7 @@ class sassessment_base {
      * @param object $cm usually null, but if we have it we pass it to save db access
      * @param object $course usually null, but if we have it we pass it to save db access
      */
-    function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+    public function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
         global $COURSE, $DB;
 
         if ($cmid == 'staticonly') {
@@ -761,6 +761,11 @@ class sassessment_base {
 
     /// Set up things for a HTML editor if it's needed
         $this->defaultformat = editors_get_preferred_format();
+    }
+    
+    
+    public function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+        self::__construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL);
     }
 
     /**
@@ -4447,6 +4452,20 @@ function sassessment_printanalizeform($text) {
     $data = Array ();
     
     $text = strip_tags ($text);
+
+    if (empty($text)) {
+        return array(
+            "wordcount" => 0,
+            "worduniquecount" => 0,
+            "numberofsentences" => 0,
+            "averagepersentence" => 0,
+            "hardwords" => 0,
+            "hardwordspersent" => 0,
+            "lexicaldensity" => 0,
+            "fogindex" => 0,
+            "laters" => 0
+        );
+    }
     
     $data['wordcount'] = sassessment_wordcount($text);
     $data['worduniquecount'] = sassessment_worduniquecount ($text);
@@ -4491,6 +4510,7 @@ function sassessment_numberofsentences ($text) {
     $text = str_replace ("!", ".", $text);
     $text = str_replace ("?", ".", $text);
     $textarray = explode (".", $text);
+    $textarrayf = array();
     foreach ($textarray as $textarray_) {
         if (!empty($textarray_) && strlen ($textarray_) > 5) {
             $textarrayf[] = $textarray_;
@@ -4502,12 +4522,18 @@ function sassessment_numberofsentences ($text) {
 
 
 function sassessment_averagepersentence ($text, $words, $sentences) {
+    if ($sentences == 0 || empty($sentences)) {
+        return 0;
+    }
     $count = round($words / $sentences, 2);
     return $count;
 }
 
 
 function sassessment_lexicaldensity ($text, $word, $wordunic) {
+    if ($word == 0 || empty($word)) {
+        return 0;
+    }
     $count = round(($wordunic / $word) * 100, 2);
     return $count;
 }
@@ -4557,6 +4583,11 @@ function sassessment_hardwords($text, $wordstotal) {
             $syllables ++;
         }
     }
+
+    if ($syllables == 0) {
+        return Array(0, 0);
+    }
+
     $score = round(($syllables / $wordstotal) * 100, 2);
     return Array($syllables, $score);
 }

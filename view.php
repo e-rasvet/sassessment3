@@ -27,7 +27,7 @@
  */
 
 /// (Replace sassessment with the name of your module and remove this line)
-//$time_start = microtime(true); 
+//$time_start = microtime(true);
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once $CFG->dirroot . '/grade/lib.php';
@@ -518,7 +518,7 @@ if ($a == "add") {
     {
         function definition()
         {
-            global $CFG, $USER, $DB, $sassessment, $upid;
+            global $CFG, $USER, $DB, $sassessment, $upidm, $id;
 
             $time = time();
             $filename = str_replace(" ", "_", $USER->username) . "_" . date("Ymd_Hi", $time);
@@ -556,7 +556,7 @@ if ($a == "add") {
                         $o .= ' class="activeborder"';
 
                     $o .= '>
-            
+
             <td style="width:50px;"><img src="img/listen.png" /></td>
             <td colspan="3">' . $sassessment->{'var' . $i} . " ";
 
@@ -593,13 +593,47 @@ if ($a == "add") {
                     else
                         $o .= '<td></td>';
 
-                    $o .= '<td style="width: 70px;">
+                    if (sassessment_is_ios()) {
+                        $time = time();
+                        $o .= '<td style="width: 70px;">
+            <div style="float:left;width:30px;">
+            
+            <div><a href="voiceshadow://?link=' . $CFG->wwwroot . '&id=' . $id . '&uid=' . $USER->id . '&time=' . $time . '&fid=' . $sassessment->{'filesr' . $i} . '&var='.$i.'&mod=sassessment">Record</a></div>
+            <input type="hidden" name="filewav[' . $i . ']" value="" id="filewav_' . $i . '"/></div>
+            </div>';
+
+                        $o .= html_writer::script('
+setInterval(function(){
+    $.get( "ajax-apprecord.php", { id: '.$id.', uid: '.$USER->id.', i: '.$i.' }, function(json){
+        var j = JSON.parse(json);
+        var t = +new Date();
+
+        if (j.status == "success") {
+            //$(\'#recordappfile_aac_' . $i . '\').html("adding...");
+            $(\'#recordappfile_aac_' . $i . '\').append(\'<source src="' . $CFG->wwwroot . '/mod/sassessment/file.php?file=\'+j.fileid+\'" type="audio/aac" />\');
+            $(\'#answer_div_ios_' . $i . '\').html(j.text);
+            $(\'#filetext[' . $i . ']\').val(j.text);
+            $("#filewav_' . $i . '").val(j.itemid);
+            $(\'#recordappfile_aac_' . $i . '\').show();
+
+          $.post( "ajax-score.php", { text1: $("#answer_div_ios_' . $i . '").attr("data-url"), text2: $("#answer_div_ios_' . $i . '").text(), aid: $("#sassessment-attempt-id").attr("data-url") }, function( data ) {
+            $("#answer_score_ios_' . $i . '").html( data );
+          });
+
+            $.get( "ajax-apprecord.php", { a: "delete", id: '.$id.', uid: '.$USER->id.', i: '.$i.' });
+        }
+    } );
+}, 1000);
+                ');
+                    } else {
+                        $o .= '<td style="width: 70px;">
             <div style="float:left;width:30px;">
             <!--<div id="speech-content-mic_' . $i . '" class="speech-mic" style="float:left;width: 45px;height: 45px;margin-top: -8px;"></div>-->
             <img src="img/recorder_inactive.png" onclick="startRecording(this, ' . $i . ');" title="Record" alt="Record" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;" />
             <img src="img/recorder_active.png" onclick="stopRecording(this, ' . $i . ');" title="Stop" alt="Stop" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;display:none;"/>
             <input type="hidden" name="filewav[' . $i . ']" value="" id="filewav_' . $i . '"/></div>
             </div>';
+                    }
 
                     if ($sassessment->audio == 1){
                         $styleRecording = "";
@@ -613,6 +647,21 @@ if ($a == "add") {
           <div id="recording_' . $i . '" style="float:left;'.$styleRecording.'"></div>
           <div style="clear:both;"></div>
           </td>';
+
+                    $o .= "</tr>";
+
+                    if (sassessment_is_ios()) {
+                        $o .= '<tr>
+<td></td>
+<td colspan="2"><div id="answer_div_ios_' . $i . '" data-url="' . str_replace('"', "'", $response->text) . '" style="margin: 6px 0;"></div></td>
+<td>              
+<div style="color:blue;" id="answer_score_ios_' . $i . '"></div></td>
+</tr>
+<tr>
+<td></td>
+<td colspan="3"><audio id="recordappfile_aac_'.$i.'" controls style="display:none;"></audio></td>
+</tr>';
+                        }
 
                 }
             }

@@ -113,5 +113,42 @@ function xmldb_sassessment_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017052600, 'sassessment');
     }
 
+    if ($oldversion < 2017062000) {
+        // Define table assign_user_mapping to be created.
+        $table = new xmldb_table('sassessment_appfiles');
+
+        // Adding fields to table assign_user_mapping.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('instance', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('fileid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('sourcefileid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('var', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('time', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table assign_user_mapping.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('user', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+
+        // Conditionally launch create table for assign_user_mapping.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Assign savepoint reached.
+        upgrade_mod_savepoint(true, 2017062000, 'sassessment');
+    }
+
+    if ($oldversion < 2017063000) {
+        // Define table assign_user_mapping to be created.
+        $table = new xmldb_table('sassessment_appfiles');
+        $field = new xmldb_field('text', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'userid');
+        // Launch change of type for field grade.
+        $dbman->add_field($table, $field);
+
+        // Assign savepoint reached.
+        upgrade_mod_savepoint(true, 2017063000, 'sassessment');
+    }
+
     return $result;
 }
