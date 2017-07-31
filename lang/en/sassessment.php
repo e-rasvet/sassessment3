@@ -202,6 +202,7 @@ $string['summary'] = 'Summary';
 $string['deleteAudio'] = ' [delete audio]';
 $string['deletecurrentaudio'] = ' [delete current audio]';
 $string['fileexist'] = 'File exist';
+$string['speak'] = 'speak';
 
 $string['sassessment:addinstance']      = 'sassessment:addinstance';
 $string['sassessment:bulkupload']      = 'sassessment:bulkupload';

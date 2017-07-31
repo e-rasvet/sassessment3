@@ -597,8 +597,8 @@ if ($a == "add") {
                         $time = time();
                         $o .= '<td style="width: 70px;">
             <div style="float:left;width:30px;">
-            
-            <div><a href="voiceshadow://?link=' . $CFG->wwwroot . '&id=' . $id . '&uid=' . $USER->id . '&time=' . $time . '&fid=' . $sassessment->{'filesr' . $i} . '&var='.$i.'&mod=sassessment">Record</a></div>
+
+            <div><a href="voiceshadow://?link=' . $CFG->wwwroot . '&id=' . $id . '&uid=' . $USER->id . '&time=' . $time . '&fid=' . $sassessment->{'filesr' . $i} . '&var='.$i.'&mod=sassessment">'.get_string("speak", "sassessment").'</a></div>
             <input type="hidden" name="filewav[' . $i . ']" value="" id="filewav_' . $i . '"/></div>
             </div>';
 
@@ -612,7 +612,7 @@ setInterval(function(){
             //$(\'#recordappfile_aac_' . $i . '\').html("adding...");
             $(\'#recordappfile_aac_' . $i . '\').append(\'<source src="' . $CFG->wwwroot . '/mod/sassessment/file.php?file=\'+j.fileid+\'" type="audio/aac" />\');
             $(\'#answer_div_ios_' . $i . '\').html(j.text);
-            $(\'#filetext[' . $i . ']\').val(j.text);
+            $(\'#answer_' . $i . '\').val(j.text);
             $("#filewav_' . $i . '").val(j.itemid);
             $(\'#recordappfile_aac_' . $i . '\').show();
 
@@ -654,7 +654,7 @@ setInterval(function(){
                         $o .= '<tr>
 <td></td>
 <td colspan="2"><div id="answer_div_ios_' . $i . '" data-url="' . str_replace('"', "'", $response->text) . '" style="margin: 6px 0;"></div></td>
-<td>              
+<td>
 <div style="color:blue;" id="answer_score_ios_' . $i . '"></div></td>
 </tr>
 <tr>
