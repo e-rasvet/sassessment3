@@ -375,13 +375,13 @@ class mod_sassessment_mod_form extends moodleform_mod
         $mform->addElement('static', 'label', '', '<span style="color: #cc3333">*</span> '.get_string('uplodingwilloveriteaudios', 'sassessment'));
 
         for ($i = 1; $i <= 10; $i++) {
-            if (isset($sassessment->{'file' . $i}) && !empty(($sassessment->{'file' . $i}))) {
+            if (isset($sassessment->{'file' . $i}) && !empty($sassessment->{'file' . $i})) {
                 $mform->addElement('static', 'label', '', '<div style="float: right;"><div style="float: left;padding-right:10px;">' . sassessment_player($sassessment->{'file' . $i}) . '</div> <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'file' . $i} . '&t=file" class="ajax-form-link">' . get_string('deletecurrentaudio', 'sassessment') . '</a></div><div style="clear:both;"></div>');
             }
 
             $mform->addElement('filepicker', 'submitfile[' . $i . ']', 'item ' . $i . ' (Teacher Question/Prompt)', null, array());
 
-            if (isset($sassessment->{'filesr' . $i}) && !empty(($sassessment->{'filesr' . $i}))) {
+            if (isset($sassessment->{'filesr' . $i}) && !empty($sassessment->{'filesr' . $i})) {
                 $mform->addElement('static', 'label', '', '<div style="float: right;"><div style="float: left;padding-right:10px;">' . sassessment_player($sassessment->{'file' . $i}) . '</div> <a href="javascript:void(0);" data-text="ajax_form.php?id=' . $idpost . '&a=delete&i=' . $i . '&fileID=' . $sassessment->{'filesr' . $i} . '&t=filesr" class="ajax-form-link">' . get_string('deletecurrentaudio', 'sassessment') . '</a></div><div style="clear:both;"></div>');
             }
             $mform->addElement('filepicker', 'submitfile2[' . $i . ']', 'item ' . $i . ' (Student Response)', null, array());
