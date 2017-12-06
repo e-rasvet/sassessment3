@@ -581,7 +581,11 @@ if ($a == "add") {
 
                             $o .= '</td>';
                         }
-                    } else
+                    } else if (!empty($sassessment->{'filesr' . $i})) {
+                        $o .= '<td style="width:400px;"> ';
+                        $o .= sassessment_splayer($sassessment->{'filesr' . $i}, "play_t_" . $i);
+                        $o .= '</td>';
+                    } else 
                         $o .= '<td></td>';
 
                     if ($sassessment->transcribe == 1)
