@@ -548,6 +548,9 @@ function sassessment_cmp_phon($spoken, $target){
 
 function sassessment_scoreFilter($score, $sassessment){
   global $DB;
+
+  if (empty($score))
+      return false;
   
   if ($sassessment->scoretype == 0) {
     return $score."%";

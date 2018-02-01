@@ -281,14 +281,16 @@ $PAGE->requires->css('/mod/sassessment/css/video-js.css');
 
 //if ($sassessment->audio == 1 && $a == "add") {
 if ($a == "add") {
-    $PAGE->requires->js('/mod/sassessment/js/recorder.js', true);
-    $PAGE->requires->js('/mod/sassessment/js/record_wav.js?' . time(), true);
+    //$PAGE->requires->js('/mod/sassessment/js/recorder.js', true);
+    //$PAGE->requires->js('/mod/sassessment/js/record_wav.js?' . time(), true);
+    $PAGE->requires->js('/mod/sassessment/js/WebAudioRecorder.min.js', true);
+    //$PAGE->requires->js('/mod/sassessment/js/main_vs_pl.js', true);
 }
 
 $PAGE->requires->css('/mod/sassessment/splayer/css/mp3-player-button.css');
 $PAGE->requires->js('/mod/sassessment/splayer/script/soundmanager2.js?' . time(), true);
 $PAGE->requires->js('/mod/sassessment/splayer/script/mp3-player-button.js', true);
-$PAGE->requires->js('/mod/sassessment/js/main.js?' . time(), true);
+$PAGE->requires->js('/mod/sassessment/js/main.js', true);
 
 
 // other things you may want to set - remove if not needed
@@ -582,16 +584,16 @@ if ($a == "add") {
                             $o .= '</td>';
                         }
                     } else if (!empty($sassessment->{'filesr' . $i})) {
-                        $o .= '<td style="width:400px;"> ';
+                        $o .= '<td style="width:50px;"> ';
                         $o .= sassessment_splayer($sassessment->{'filesr' . $i}, "play_t_" . $i);
                         $o .= '</td>';
                     } else 
-                        $o .= '<td></td>';
+                        $o .= '<td style="width:350px;"></td>';
 
                     if ($sassessment->transcribe == 1)
                         $o .= '<td style="">
               <div id="answer_div_' . $i . '" data-url="' . str_replace('"', "'", $response->text) . '"></div>
-              <textarea name="filetext[' . $i . ']" id="answer_' . $i . '" style="display:none;width:500px;height:70px;"></textarea>
+              <textarea name="filetext[' . $i . ']" id="answer_' . $i . '" style="display:none;width:350px;height:70px;"></textarea>
               <div style="color:blue;" id="answer_score_' . $i . '"></div>
               </td>';
                     else
@@ -633,10 +635,177 @@ setInterval(function(){
                         $o .= '<td style="width: 70px;">
             <div style="float:left;width:30px;">
             <!--<div id="speech-content-mic_' . $i . '" class="speech-mic" style="float:left;width: 45px;height: 45px;margin-top: -8px;"></div>-->
-            <img src="img/recorder_inactive.png" onclick="startRecording(this, ' . $i . ');" title="Record" alt="Record" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;" />
-            <img src="img/recorder_active.png" onclick="stopRecording(this, ' . $i . ');" title="Stop" alt="Stop" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;display:none;"/>
+            <img src="img/recorder_inactive.png" onclick="startRecording(this, ' . $i . ');" id="btn_rec" title="Record" alt="Record" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;" />
+            <img src="img/recorder_active.png" onclick="stopRecording(this, ' . $i . ');" id="btn_stop" title="Stop" alt="Stop" data-url="speech-content-mic_' . $i . '" style="cursor: pointer;display:none;"/>
             <input type="hidden" name="filewav[' . $i . ']" value="" id="filewav_' . $i . '"/></div>
             </div>';
+
+                        $o .= '<script>
+
+  function __log(e, data) {
+    console.log("\n" + e + " " + (data || \'\'));
+  }
+
+  var audio_context;
+  var recorder;
+  window.activeRecordId = 0;
+
+  function startUserMedia(stream) {
+    var input = audio_context.createMediaStreamSource(stream);
+    __log(\'Media stream created.\' );
+    __log("input sample rate " +input.context.sampleRate);
+
+    recorder = new Recorder(input, {
+                  numChannels: 1,
+                  sampleRate: 48000,
+                });
+    __log(\'Recorder initialised.\');
+  }
+
+  function startRecording(button, itemid) {
+      window.activeRecordId = itemid;
+      recordSTT(itemid);
+      recorder.startRecording();
+      $(button).parent().find(".speech-mic").removeClass(\'speech-mic\').addClass(\'speech-mic-works\');
+      $(button).hide();
+      $(button.nextElementSibling).show();
+      __log(\'Recording...\');
+  }
+
+  function stopRecording(button, itemid) {
+      $("#loader_"+itemid).show();
+      recordSTT(itemid);
+      recorder.finishRecording();
+      $(button).parent().find(".speech-mic-works").removeClass(\'speech-mic-works\').addClass(\'speech-mic\');
+      $(button).hide();
+      $(button.previousElementSibling).show();
+      __log(\'Stopped recording.\');
+  }
+
+  window.onload = function init() {
+      // navigator.getUserMedia shim
+      navigator.getUserMedia =
+          navigator.getUserMedia ||
+          navigator.webkitGetUserMedia ||
+          navigator.mozGetUserMedia ||
+          navigator.msGetUserMedia;
+    
+      // URL shim
+      window.URL = window.URL || window.webkitURL;
+    
+      // audio context + .createScriptProcessor shim
+      var audioContext = new AudioContext;
+      if (audioContext.createScriptProcessor == null)
+        audioContext.createScriptProcessor = audioContext.createJavaScriptNode;
+    
+      var testTone = (function() {
+          var osc = audioContext.createOscillator(),
+              lfo = audioContext.createOscillator(),
+              ampMod = audioContext.createGain(),
+              output = audioContext.createGain();
+          lfo.type = \'square\';
+          lfo.frequency.value = 2;
+          osc.connect(ampMod);
+          lfo.connect(ampMod.gain);
+          output.gain.value = 0.5;
+          ampMod.connect(output);
+          osc.start();
+          lfo.start();
+          return output;
+      })();
+    
+   
+      var testToneLevel = audioContext.createGain(),
+          microphone = undefined,     // obtained by user click
+          microphoneLevel = audioContext.createGain(),
+          mixer = audioContext.createGain();
+    
+      testTone.connect(testToneLevel);
+      testToneLevel.gain.value = 0;
+      //testToneLevel.connect(mixer);
+      microphoneLevel.gain.value = 0.5;
+      microphoneLevel.connect(mixer);
+      //mixer.connect(audioContext.destination);
+
+      if (microphone == null)
+          navigator.getUserMedia({ audio: true },
+              function(stream) {
+                  microphone = audioContext.createMediaStreamSource(stream);
+                  microphone.connect(microphoneLevel);
+              },
+              function(error) {
+                  console.log("Could not get audio input.");
+                  audioRecorder.onError(audioRecorder, "Could not get audio input.");
+              });
+    
+        
+          recorder = new WebAudioRecorder(mixer, {
+              workerDir: "js/"
+          });
+         
+          recorder.setEncoding("mp3");
+        
+          recorder.setOptions({
+              timeLimit: 300,
+              mp3: { bitRate: 64 }
+          });
+    
+          recorder.onComplete = function(recorder, blob) {
+              window.LatestBlob = blob;
+      
+              var url = URL.createObjectURL(blob);
+              var li = document.createElement("div");
+              var au = document.createElement("audio");
+      
+              au.controls = true;
+              au.src = url;
+              li.appendChild(au);
+   
+              uploadAudio(blob);
+      
+          };
+    
+  };
+  
+  	
+  function uploadAudio(mp3Data){
+	      var reader = new FileReader();
+		  reader.onload = function(event){
+			    var mp3Name = encodeURIComponent(\'audio_recording_\' + new Date().getTime() + \'.mp3\');
+			    console.log("mp3name = " + mp3Name);
+                var fd = new FormData();
+                fd.append(\'fname\', mp3Name);
+                fd.append(\'id\', $("input[name=\'id\']").val());
+                fd.append(\'data\', mp3Data);
+                $.ajax({
+                    type: \'POST\',
+                    url: \'upload.php\',
+                    data: fd,
+                    processData: false,
+                    contentType: false
+                }).done(function(data) {
+                      console.log(data);
+                      obj = JSON.parse(data);
+                      ids = window.activeRecordId;
+                    
+                      $("#loader_"+ids).hide();
+                      $("#filewav_"+ids).val(obj.id);
+                      $("#recording_"+ids).html(\'<a href="\'+obj.fullurl+\'" class="sm2_button">Audio</a>\');
+                      
+                      $("#answerbox_"+ids).removeClass("activeborderb");
+                      $("#questionbox_"+(ids+1)).addClass("activeborder");
+                      
+                      $.post( "ajax-score.php", { text1: $("#answer_div_"+ids).attr("data-url"), text2: $("#answer_div_"+ids).text(), aid: $("#sassessment-attempt-id").attr("data-url") }, function( data ) {
+                        $("#answer_score_"+ids).html( data );
+                      });
+                      
+                      basicMP3Player.init();
+                });
+	    	};      
+		    reader.readAsDataURL(mp3Data);
+  }
+</script>';
+                        
                     }
 
                     if ($sassessment->audio == 1){
