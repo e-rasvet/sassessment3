@@ -82,7 +82,7 @@
           $("#answerbox_"+ids).removeClass("activeborderb");
           $("#questionbox_"+(ids+1)).addClass("activeborder");
           
-          $.post( "ajax-score.php", { text1: $("#answer_div_"+ids).attr("data-url"), text2: $("#answer_div_"+ids).text(), aid: $("#sassessment-attempt-id").attr("data-url") }, function( data ) {
+          $.post( "ajax-score.php", { text1: $("#answer_div_"+ids).attr("data-url"), text2: $("#answer_div_"+ids).text(), aid: $("#sassessment-attempt-id").attr("data-url"), iid: ids }, function( data ) {
             $("#answer_score_"+ids).html( data );
           });
           

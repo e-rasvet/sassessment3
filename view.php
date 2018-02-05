@@ -142,10 +142,14 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
             $comparetext_orig .= $maxtext . " ";
             $comparetext_current .= $v . " ";
 
-            if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
+            //if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
                 //if (!empty($v)) {
-                    $add->{'per' . $k} = sassessment_similar_text($sampleresponse->text, $v);
+                    $add->{'per' . $k} = sassessment_similar_text($maxtext, $v);
                 //}
+            //}
+
+            if (!is_int($add->{'per' . $k})) {
+                $add->{'per' . $k} = 0;
             }
         }
 
@@ -288,9 +292,9 @@ if ($a == "add") {
 }
 
 $PAGE->requires->css('/mod/sassessment/splayer/css/mp3-player-button.css');
-$PAGE->requires->js('/mod/sassessment/splayer/script/soundmanager2.js?' . time(), true);
+$PAGE->requires->js('/mod/sassessment/splayer/script/soundmanager2.js?', true);
 $PAGE->requires->js('/mod/sassessment/splayer/script/mp3-player-button.js', true);
-$PAGE->requires->js('/mod/sassessment/js/main.js', true);
+$PAGE->requires->js('/mod/sassessment/js/main.js?6', true);
 
 
 // other things you may want to set - remove if not needed
@@ -407,11 +411,12 @@ if ($a == "list") {
 
             $cell1 = new html_table_cell($o);
 
+
+
             $o = "";
 
             $comparetext_orig = "";
             $comparetext_current = "";
-            $comparecurrent = "";
 
             for ($i = 1; $i <= 10; $i++) {
                 if (!empty($list->{'var' . $i}) || !empty($list->{'file' . $i})) {
@@ -424,39 +429,25 @@ if ($a == "list") {
                     $o .= "{$i}. ";
 
                     if (!empty($list->{'file' . $i}))
-                        $o .= "&nbsp;" . sassessment_splayer($list->{'file' . $i}) . " &nbsp;";
+                        $studentPlayer = "&nbsp;" . sassessment_splayer($list->{'file' . $i}) . " &nbsp;";
+                    else
+                        $studentPlayer = "";
 
                     if ($response = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $i, "rid" => 1)))
                         $o .= '<span style="color: #0099CC;">' . sassessment_scoreFilter($list->{'per' . $i}, $sassessment) . "</span> &nbsp;";
 
                     if (!empty($list->{'var' . $i}))
-                        $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $list->{'var' . $i};
-
-                    if (!empty($list->{'var' . $i}) && $sassessment->textcomparison == 1) {
-                        $maxp = 0;
-                        $maxi = 1;
-                        $maxtext = "";
-                        if ($sampleresponses = $DB->get_records("sassessment_responses", array("aid" => $sassessment->id, "iid" => $i))) {
-                            foreach ($sampleresponses as $sampleresponse) {
-                                $percent = $list->{'var' . $i};
-                                if ($maxp < $percent) {
-                                    $maxi = $i;
-                                    $maxp = $percent;
-                                    $maxtext = $sampleresponse->text;
-                                }
-                            }
-                        }
-
-                        $comparetext_orig .= $maxtext . " ";
-                        $comparetext_current .= $list->{'var' . $i} . " ";
-
-                        $comparecurrent .= "<div>{$i}. <b>" . sassessment_scoreFilter(round($maxp), $sassessment) . "%</b> " . $maxtext . "</div>";
-                    }
-
+                        $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $studentPlayer . " " . $list->{'var' . $i};
+                    
                     $o .= '</div>';
 
+                    if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i}))
+                        $targetAnswerPlayer = "&nbsp;" . sassessment_splayer($sassessment->{'filesr' . $i}, "play_l_" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
+                    else
+                        $targetAnswerPlayer = "";
+
                     if ($response)
-                        $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $response->text . '</div>';
+                        $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $targetAnswerPlayer . " " . $response->text . '</div>';
 
 
                     $o .= html_writer::end_tag('div');
@@ -484,7 +475,7 @@ if ($a == "list") {
             if ($sassessment->textcomparison == 1) {
                 //$percent = sassessment_similar_text($comparetext_orig, $comparetext_current);
                 //similar_text($comparetext_orig, $comparetext_current, $percent);
-                $cell3 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>" . sassessment_scoreFilter($list->pertotal, $sassessment) . "</b></div>" . $comparecurrent);
+                $cell3 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>" . sassessment_scoreFilter($list->pertotal, $sassessment) . "</b></div>");
                 //$cells[] = $cell3;
             }
 
@@ -622,7 +613,7 @@ setInterval(function(){
             $("#filewav_' . $i . '").val(j.itemid);
             $(\'#recordappfile_aac_' . $i . '\').show();
 
-          $.post( "ajax-score.php", { text1: $("#answer_div_ios_' . $i . '").attr("data-url"), text2: $("#answer_div_ios_' . $i . '").text(), aid: $("#sassessment-attempt-id").attr("data-url") }, function( data ) {
+          $.post( "ajax-score.php", { text1: $("#answer_div_ios_' . $i . '").attr("data-url"), text2: $("#answer_div_ios_' . $i . '").text(), aid: $("#sassessment-attempt-id").attr("data-url"), iid: ' . $i . ' }, function( data ) {
             $("#answer_score_ios_' . $i . '").html( data );
           });
 
@@ -795,7 +786,7 @@ setInterval(function(){
                       $("#answerbox_"+ids).removeClass("activeborderb");
                       $("#questionbox_"+(ids+1)).addClass("activeborder");
                       
-                      $.post( "ajax-score.php", { text1: $("#answer_div_"+ids).attr("data-url"), text2: $("#answer_div_"+ids).text(), aid: $("#sassessment-attempt-id").attr("data-url") }, function( data ) {
+                      $.post( "ajax-score.php", { text1: $("#answer_div_"+ids).attr("data-url"), text2: $("#answer_div_"+ids).text(), aid: $("#sassessment-attempt-id").attr("data-url"), iid: ids }, function( data ) {
                         $("#answer_score_"+ids).html( data );
                       });
                       

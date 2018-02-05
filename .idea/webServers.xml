@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5ec649cb-a4be-4ebd-b88f-5e780026f0d1" name="biz214.inmotionhosting.com" url="https://secure214.inmotionhosting.com/~fltrcn5/moodle/">
+        <fileTransfer host="biz214.inmotionhosting.com" port="2222" privateKey="$USER_HOME$/.ssh/id_rsaNobuhiro" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="2222" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

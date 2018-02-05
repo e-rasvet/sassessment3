@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="biz214.inmotionhosting.com">
+    <serverData>
+      <paths name="biz214.inmotionhosting.com">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/fltrcn5/public_html/moodle/mod/sassessment" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

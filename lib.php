@@ -433,6 +433,13 @@ function sassessment_runExternal( $cmd, &$code ) {
 
 function sassessment_similar_text($text1, $text2){
   global $CFG;
+    
+  $text1 = preg_replace('/[^a-zA-Z\s]+/', '', $text1);
+  $text1 = preg_replace('!\s+!', ' ', $text1);
+
+
+  $text2 = preg_replace('/[^a-zA-Z\s]+/', '', $text2);
+  $text2 = preg_replace('!\s+!', ' ', $text2);
   
   //make_temp_directory('sassessment/cmp');
   //$tmpdir = $CFG->dirroot . '/mod/sassessment/tmp';
@@ -716,7 +723,7 @@ class sassessment_base {
      * @param object $cm usually null, but if we have it we pass it to save db access
      * @param object $course usually null, but if we have it we pass it to save db access
      */
-    public function __construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+    public function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
         global $COURSE, $DB;
 
         if ($cmid == 'staticonly') {
@@ -767,9 +774,9 @@ class sassessment_base {
     }
     
     
-    public function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
-        self::__construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL);
-    }
+    //public function sassessment_base($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL) {
+    //    self::__construct($cmid='staticonly', $sassessment=NULL, $cm=NULL, $course=NULL);
+    //}
 
     /**
      * Display the sassessment, used by view.php
@@ -4364,7 +4371,7 @@ function sassessment_player_video($link, $mime = 'video/mp4', $poster = null, $i
 }
 
 
-function sassessment_splayer($ids, $id = null){
+function sassessment_splayer($ids, $id = null, $idSub = null){
     global $DB, $CFG;
     
     if ($file = sassessment_getfile($ids)){
@@ -4374,9 +4381,12 @@ function sassessment_splayer($ids, $id = null){
     } else {
       return false;
     }
-    
-    $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename);
-    
+
+    if (empty($idSub))
+        $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename);
+    else
+        $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename."?".$idSub);
+
     if ($id != null)
       $o = '<a href="'.$link.'" class="sm2_button" id="'.$id.'">Audio</a>';
     else

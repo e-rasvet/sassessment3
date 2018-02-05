@@ -1,11 +1,10 @@
 window.recordmark = 0;
-window.active     = 1;
 
 insertAtCaret = function(areaId,text) {
         var txtarea = document.getElementById(areaId);
         var scrollPos = txtarea.scrollTop;
         var strPos = 0;
-        
+
         strPos = txtarea.selectionStart;
 
         var front = (txtarea.value).substring(0,strPos);
@@ -17,7 +16,6 @@ insertAtCaret = function(areaId,text) {
         txtarea.focus();
         txtarea.scrollTop = scrollPos;
 };
-
 
 $.fn.getCursorPosition = function() {
         var el = $(this).get(0);
@@ -44,7 +42,7 @@ $.fn.setCursorPosition = function(pos) {
             range.moveStart('character', pos);
             range.select();
         }
-}
+};
 
 
 try {
@@ -59,66 +57,57 @@ recognition.lang = "en";
 var interimResult = '';
 
 recognition.onresult = function (event) {
+    //console.log(event);
 
-    var pos = $('#answer_'+window.active).get(0) - interimResult.length;
-    $('#answer_'+window.active).val($('#answer_'+window.active).val().replace(interimResult, ''));
+    var pos = $('#speechtext').get(0) - interimResult.length;
+    $('#speechtext').val($('#speechtext').val().replace(interimResult, ''));
     interimResult = '';
-    $('#answer_'+window.active).get(0).setSelectionRange;
+    $('#speechtext').get(0).setSelectionRange;
     for (var i = event.resultIndex; i < event.results.length; ++i) {
       if (event.results[i].isFinal) {
-          insertAtCaret('answer_'+window.active, event.results[i][0].transcript);
+          insertAtCaret('speechtext', event.results[i][0].transcript);
       } else {
           isFinished = false;
-          insertAtCaret('answer_'+window.active, event.results[i][0].transcript + '\u200B');
+          insertAtCaret('speechtext', event.results[i][0].transcript + '\u200B');
           interimResult += event.results[i][0].transcript + '\u200B';
       }
     }
-    
-    $('#answer_div_'+window.active).html( $('#answer_'+window.active).val() );
-    
+
+    var textarea = document.getElementById('speechtext');
+    textarea.scrollTop = textarea.scrollHeight;
+
     window.recordmark = 1;
 };
 
 recognition.onstart = function() {
-    $('#answer_'+window.active).val("");
-    $('#speech-content-mic_'+window.active).removeClass('speech-mic').addClass('speech-mic-works');
-    $('#answer_'+window.active).focus();
+    $('#speechtext').focus();
     window.recordmark = 1;
 };
 
 recognition.onend = function() {
-    $('#speech-content-mic_'+window.active).removeClass('speech-mic-works').addClass('speech-mic');
     window.recordmark = 0;
+
+    var id = 'transcript_'+$('.selectaudiomodel').val();
+
+    $("#id_speechtext").val("" + $("#speechtext").val() + "");
+
 };
 
 
+$( document ).ready(function() {
+    //var audioElement = document.createElement('audio');
 
-
-function recordSTT(ids){
-    console.log("mark:"+window.recordmark);
-    if (window.recordmark == 0) {
-      console.log('started '+ids);
-      recognition.start();
-      window.active = ids;
-      window.recordmark = ids;
-    } else {
-      recognition.stop();
-      window.recordmark = 0;
-    }
-}
-
-
-
-$(document).ready(function() {
-  $(".sassessment_rate_box").change(function() {
-    var value = $(this).val();
-    var data  = $(this).attr("data-url");
-    
-    var e = $(this).parent();
-    e.html('<img src="img/ajax-loader.gif" />');
-    
-    $.get("ajax.php", {act: "setrating", data: data, value: value}, function(data) {
-      e.html(data); 
+    $('#btn_rec').click(function() {
+        $('.p-content').show();
+        recognition.start();
+        window.recordmark = 1;
     });
-  });
- });
+
+    $('#btn_stop').click(function() {
+        recognition.stop();
+        window.recordmark = 0;
+    });
+
+
+
+});

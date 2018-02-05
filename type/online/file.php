@@ -46,51 +46,171 @@ $PAGE->requires->js('/mod/sassessment/js/jquery.min.js', true);
 $PAGE->requires->js('/mod/sassessment/js/flowplayer.min.js', true);
 $PAGE->requires->js('/mod/sassessment/js/swfobject.js', true);
 
+$PAGE->requires->css('/mod/sassessment/splayer/css/mp3-player-button.css');
+$PAGE->requires->js('/mod/sassessment/splayer/script/soundmanager2.js?', true);
+$PAGE->requires->js('/mod/sassessment/splayer/script/mp3-player-button.js', true);
+$PAGE->requires->js('/mod/sassessment/js/main.js?6', true);
+
 echo $OUTPUT->header();
 echo $OUTPUT->box_start('generalbox boxaligcenter', 'dates');
 
-$lists = $DB->get_records ("sassessment_files", array("userid" => $user->id), 'time DESC');
+$lists = $DB->get_records ("sassessment_studdent_answers", array("uid" => $user->id), 'id DESC');
 
 
-$table        = new html_table();
-$table->head  = array(get_string("sassessment_list", "sassessment"));
-$table->align = array ("left");
+$table = new html_table();
 $table->width = "100%";
 
+$table->head = array(get_string("cell1::student", "sassessment"), "", get_string("cell2::answer", "sassessment"));
+$table->align = array("left", "left", "left");
+
+$table->size = array("150px", "25px", "300px");
+
+if ($sassessment->textanalysis == 1) {
+    $table->head[] = get_string("cell3::textanalysis", "sassessment");
+    $table->align[] = "left";
+    $table->size[] = "200px";
+}
+
+if ($sassessment->humanevaluation == 1 && $sassessment->grademethod == "default") {
+    $table->head[] = get_string("cell5::humanevaluation", "sassessment");
+    $table->align[] = "center";
+    $table->size[] = "50px";
+}
+
+
 foreach ($lists as $list) {
-  if ($cml = get_coursemodule_from_id('sassessment', $list->instance)) {
-    if ($cml->course == $cm->course && $cml->instance == $cm->instance) {
-      $name = "var".$list->var."text";
-      
-      $userdata  = $DB->get_record("user", array("id" => $list->userid));
-      $picture   = $OUTPUT->user_picture($userdata, array('popup' => true));
-      
-      $o = "";
-      $o .= html_writer::start_tag('div', array("style" => "text-align:left;margin:10px 0;"));
-      $o .= html_writer::tag('span', $picture);
-      $o .= html_writer::start_tag('span', array("style" => "margin: 8px;position: absolute;"));
-      $o .= html_writer::link(new moodle_url('/user/view.php', array("id" => $userdata->id, "course" => $cml->course)), fullname($userdata));
-      $o .= html_writer::end_tag('span');
-      $o .= html_writer::end_tag('div');
-      
-      $o .= html_writer::tag('div', $list->summary, array('style'=>'margin:10px 0;'));
-      
-      $o .= html_writer::tag('div', sassessment_player($list->id));
-      
-      if (!empty($sassessment->{$name}))
-        $o .= html_writer::tag('div', "(".$sassessment->{$name}.")");
-      
-      $o .= html_writer::tag('div', html_writer::tag('small', date(get_string("timeformat1", "sassessment"), $list->time)), array("style" => "float:left;"));
-      
-      $cell1 = new html_table_cell($o);
-      
-      $cells = array($cell1);
-      
-      $row = new html_table_row($cells);
-      
-      $table->data[] = $row;
+
+    if ($cm->instance == $list->aid) {
+        $userdata = $DB->get_record("user", array("id" => $list->uid));
+        $picture = $OUTPUT->user_picture($userdata, array('popup' => true));
+
+        //1-cell
+        $o = "";
+        $o .= html_writer::start_tag('div', array("style" => "text-align:left;margin:10px 0;"));
+        $o .= html_writer::tag('span', $picture);
+        $o .= html_writer::start_tag('span', array("style" => "margin: 8px;position: absolute;"));
+        $o .= html_writer::link(new moodle_url('/user/view.php', array("id" => $userdata->id, "course" => $cm->course)), fullname($userdata));
+        $o .= html_writer::end_tag('span');
+        $o .= html_writer::end_tag('div');
+
+        $o .= html_writer::tag('div', "", array("style" => "clear:both"));
+
+        $o .= html_writer::start_tag('div');
+        $o .= $list->summary;
+        $o .= html_writer::end_tag('div');
+
+
+        $o .= html_writer::tag('div', html_writer::tag('small', date("F d, Y @ H:i", $list->timecreated), array("style" => "margin: 2px 0 0 10px;")));
+
+
+        if ($list->uid == $USER->id || has_capability('mod/sassessment:teacher', $context)) {
+            if ($list->uid == $USER->id)
+                $editlink = html_writer::link(new moodle_url('/mod/sassessment/view.php', array("id" => $id, "a" => "add", "upid" => $list->id)), get_string("editlink", "sassessment")) . " ";
+            else
+                $editlink = "";
+
+            $deletelink = html_writer::link(new moodle_url('/mod/sassessment/view.php', array("id" => $id, "a" => "list", "act" => "deleteentry", "upid" => $list->id)), get_string("delete", "sassessment"), array("onclick" => "return confirm('" . get_string("confim", "sassessment") . "')"));
+            $deleteAudiolink = html_writer::link(new moodle_url('/mod/sassessment/view.php', array("id" => $id, "a" => "list", "act" => "deleteAudio", "upid" => $list->id)), get_string("deleteAudio", "sassessment"), array("onclick" => "return confirm('" . get_string("confim", "sassessment") . "')"));
+        }
+
+        $cell1 = new html_table_cell($o);
+
+        //1_2-cell
+        $o = "";
+        $o .= html_writer::start_tag('div', array("style" => "text-align:left;margin:10px 0;"));
+        for ($i = 1; $i <= 10; $i++) {
+            if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i})) {
+                unset($response);
+
+                $o .= html_writer::start_tag('div', array("style" => "margin:10px 0;"));
+
+                $o .= "{$i}. ";
+
+                if (!empty($sassessment->{'filesr' . $i}))
+                    $o .= "&nbsp;" . sassessment_splayer($sassessment->{'filesr' . $i}, "play_l_" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
+
+                $o .= html_writer::end_tag('div');
+            }
+        }
+        $o .= html_writer::end_tag('div');
+
+        $cell1_2 = new html_table_cell($o);
+
+
+        $o = "";
+
+        $comparetext_orig = "";
+        $comparetext_current = "";
+        $comparecurrent = "";
+
+        for ($i = 1; $i <= 10; $i++) {
+            if (!empty($list->{'var' . $i}) || !empty($list->{'file' . $i})) {
+                unset($response);
+
+                $o .= html_writer::start_tag('div', array("style" => "margin:10px 0;"));
+
+                $o .= "<div>";
+
+                $o .= "{$i}. ";
+
+                if (!empty($list->{'file' . $i}))
+                    $o .= "&nbsp;" . sassessment_splayer($list->{'file' . $i}) . " &nbsp;";
+
+                if ($response = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $i, "rid" => 1)))
+                    $o .= '<span style="color: #0099CC;">' . sassessment_scoreFilter($list->{'per' . $i}, $sassessment) . "</span> &nbsp;";
+
+                if (!empty($list->{'var' . $i}))
+                    $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $list->{'var' . $i};
+
+                $o .= '</div>';
+
+                if ($response)
+                    $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $response->text . '</div>';
+
+
+                $o .= html_writer::end_tag('div');
+            }
+        }
+
+        $cell2 = new html_table_cell($o);
+
+        $o = "";
+
+        if ($catdata = $DB->get_record("grade_items", array("courseid" => $cm->course, "iteminstance" => $cm->instance, "itemmodule" => 'sassessment'))) {
+            if ($grid = $DB->get_record("grade_grades", array("itemid" => $catdata->id, "userid" => $list->uid))) {
+                $rateteacher = round($grid->finalgrade, 1);
+                $o .= html_writer::tag('small', $rateteacher) . " ";
+            }
+        }
+
+        $cell5 = new html_table_cell($o);
+
+        $cells = array($cell1, $cell1_2, $cell2);
+
+        if ($sassessment->textcomparison == 1) {
+            //$percent = sassessment_similar_text($comparetext_orig, $comparetext_current);
+            //similar_text($comparetext_orig, $comparetext_current, $percent);
+            $cell3 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>" . sassessment_scoreFilter($list->pertotal, $sassessment) . "</b></div>" . $comparecurrent);
+            //$cells[] = $cell3;
+        }
+
+        if ($sassessment->textanalysis == 1) {
+            if ($sassessment->textcomparison == 1)
+                $cell4 = new html_table_cell("<div style=\"color: #0099CC;\">Total: <b>" . sassessment_scoreFilter($list->pertotal, $sassessment) . "</b></div>" . "<small>" . sassessment_analizereport(json_decode($list->analize, true)) . "</small>");
+            else
+                $cell4 = new html_table_cell("<small>" . sassessment_analizereport(json_decode($list->analize, true)) . "</small>");
+
+            $cells[] = $cell4;
+        }
+
+        if ($sassessment->grademethod == "default" && $sassessment->humanevaluation == 1)
+            $cells[] = $cell5;
+
+
+        $row = new html_table_row($cells);
+
+        $table->data[] = $row;
     }
-  }
 }
 
 echo html_writer::table($table);
