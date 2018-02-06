@@ -60,10 +60,10 @@ $lists = $DB->get_records ("sassessment_studdent_answers", array("uid" => $user-
 $table = new html_table();
 $table->width = "100%";
 
-$table->head = array(get_string("cell1::student", "sassessment"), "", get_string("cell2::answer", "sassessment"));
-$table->align = array("left", "left", "left");
+$table->head = array(get_string("cell1::student", "sassessment"), get_string("cell2::answer", "sassessment"));
+$table->align = array("left", "left");
 
-$table->size = array("150px", "25px", "300px");
+$table->size = array("150px", "300px");
 
 if ($sassessment->textanalysis == 1) {
     $table->head[] = get_string("cell3::textanalysis", "sassessment");
@@ -115,27 +115,6 @@ foreach ($lists as $list) {
 
         $cell1 = new html_table_cell($o);
 
-        //1_2-cell
-        $o = "";
-        $o .= html_writer::start_tag('div', array("style" => "text-align:left;margin:10px 0;"));
-        for ($i = 1; $i <= 10; $i++) {
-            if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i})) {
-                unset($response);
-
-                $o .= html_writer::start_tag('div', array("style" => "margin:10px 0;"));
-
-                $o .= "{$i}. ";
-
-                if (!empty($sassessment->{'filesr' . $i}))
-                    $o .= "&nbsp;" . sassessment_splayer($sassessment->{'filesr' . $i}, "play_l_" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
-
-                $o .= html_writer::end_tag('div');
-            }
-        }
-        $o .= html_writer::end_tag('div');
-
-        $cell1_2 = new html_table_cell($o);
-
 
         $o = "";
 
@@ -154,19 +133,31 @@ foreach ($lists as $list) {
                 $o .= "{$i}. ";
 
                 if (!empty($list->{'file' . $i}))
-                    $o .= "&nbsp;" . sassessment_splayer($list->{'file' . $i}) . " &nbsp;";
+                    $studentPlayer = "&nbsp;" . sassessment_splayer($list->{'file' . $i}) . " &nbsp;";
+                else
+                    $studentPlayer = "";
+
 
                 if ($response = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $i, "rid" => 1)))
                     $o .= '<span style="color: #0099CC;">' . sassessment_scoreFilter($list->{'per' . $i}, $sassessment) . "</span> &nbsp;";
 
                 if (!empty($list->{'var' . $i}))
-                    $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $list->{'var' . $i};
+                    $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $studentPlayer . " " . $list->{'var' . $i};
+                else if (!empty($studentPlayer))
+                    $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $studentPlayer;
 
                 $o .= '</div>';
 
-                if ($response)
-                    $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $response->text . '</div>';
+                //if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i}))
+                if (!empty($sassessment->{'filesr' . $i}))
+                    $targetAnswerPlayer = "&nbsp;" . sassessment_splayer($sassessment->{'filesr' . $i}, "play_l_" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
+                else
+                    $targetAnswerPlayer = "";
 
+                if ($response)
+                    $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $targetAnswerPlayer . " " . $response->text . '</div>';
+                else
+                    $o .= "No response";
 
                 $o .= html_writer::end_tag('div');
             }
@@ -185,7 +176,7 @@ foreach ($lists as $list) {
 
         $cell5 = new html_table_cell($o);
 
-        $cells = array($cell1, $cell1_2, $cell2);
+        $cells = array($cell1, $cell2);
 
         if ($sassessment->textcomparison == 1) {
             //$percent = sassessment_similar_text($comparetext_orig, $comparetext_current);

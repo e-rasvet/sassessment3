@@ -148,7 +148,7 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
                 //}
             //}
 
-            if (!is_int($add->{'per' . $k})) {
+            if (is_nan($add->{'per' . $k})) {
                 $add->{'per' . $k} = 0;
             }
         }
@@ -182,28 +182,35 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
     //Check max grade
     if ($catdata = $DB->get_record("grade_items", array("courseid" => $sassessment->course, "iteminstance" => $sassessment->id, "itemmodule" => 'sassessment'))) {
 
+        if ($add->pertotal < 1) {
+            $add->pertotal = 1;
+        }
+
+        $gradeRaw = round($catdata->grademax * $add->pertotal / 100);
+
         $grade = array();
         $grade[$add->uid] = new stdClass;
         $grade[$add->uid]->id = $add->uid;
         $grade[$add->uid]->userid = $add->uid;
         $grade[$add->uid]->rawgrademax = $catdata->grademax;
         $grade[$add->uid]->grademax = $catdata->grademax;
-        $grade[$add->uid]->rawgrade = round($catdata->grademax * $percent / 100);
+        $grade[$add->uid]->rawgrade = $gradeRaw;//round($catdata->grademax * $add->pertotal / 100);
         $grade[$add->uid]->feedback = "autograde";
         $grade[$add->uid]->feedbackformat = 0;
 
 
         if ($sassessment->grademethod == "rubricauto") {
-            //$grade_item = new grade_item(array("courseid" => $sassessment->course, "iteminstance"=> $sassessment->id, "itemmodule" => 'sassessment'));
             /*
+            $grade_item = new grade_item(array("courseid" => $sassessment->course, "iteminstance"=> $sassessment->id, "itemmodule" => 'sassessment'));
+
             $data = new stdClass;
             $data->grademax = 100;
             grade_item::set_properties($grade_item, $data);
-            $grade_item->rescale_grades_keep_percentage($oldmin, $oldmax, $newmin, $newmax, 'gradebook');
+            $grade_item->rescale_grades_keep_percentage(0, 100, 0, 100, 'gradebook');
             $grade_item->update();
 
 
-                $rawgrade       = round($catdata->grademax * $percent/100);
+                $rawgrade       = $gradeRaw; //round($catdata->grademax * $percent/100);
                 $feedback       = "autograde";
                 $feedbackformat = FORMAT_MOODLE;
                 $usermodified   = $USER->id;
@@ -214,7 +221,7 @@ if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
                 if (!$grade_item->update_raw_grade($add->uid, $rawgrade, $sassessment, $feedback, $feedbackformat, $usermodified, $dategraded, $datesubmitted, $grade_grade)){
                   echo "False";
                 }
-                */
+*/
             sassessment_grade_item_update($sassessment, $grade);
         }
 
@@ -231,7 +238,7 @@ if ($act == "deleteentry" && !empty($upid)) {
     if (has_capability('mod/sassessment:teacher', $context))
         $DB->delete_records("sassessment_studdent_answers", array("id" => $upid));
     else
-        $DB->delete_records("sassessment_studdent_answers", array("id" => $upid, "userid" => $USER->id));
+        $DB->delete_records("sassessment_studdent_answers", array("id" => $upid, "uid" => $USER->id));
 }
 
 /*
@@ -241,7 +248,7 @@ if ($act == "deleteAudio" && !empty($upid)) {
     if (has_capability('mod/sassessment:teacher', $context))
         $file = $DB->get_record("sassessment_studdent_answers", array("id" => $upid));
     else
-        $file = $DB->get_record("sassessment_studdent_answers", array("id" => $upid, "userid" => $USER->id));
+        $file = $DB->get_record("sassessment_studdent_answers", array("id" => $upid, "uid" => $USER->id));
 
 
     for ($i = 1; $i <= 10; $i++) {
@@ -433,22 +440,27 @@ if ($a == "list") {
                     else
                         $studentPlayer = "";
 
+
                     if ($response = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $i, "rid" => 1)))
                         $o .= '<span style="color: #0099CC;">' . sassessment_scoreFilter($list->{'per' . $i}, $sassessment) . "</span> &nbsp;";
 
                     if (!empty($list->{'var' . $i}))
                         $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $studentPlayer . " " . $list->{'var' . $i};
+                    else if (!empty($studentPlayer))
+                        $o .= '<b>' . get_string("studentanswer", "sassessment") . ":</b> " . $studentPlayer;
                     
                     $o .= '</div>';
 
-                    if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i}))
+                    //if (!empty($sassessment->{'varcheck' . $i}) || !empty($sassessment->{'filesr' . $i}))
+                    if (!empty($sassessment->{'filesr' . $i}))
                         $targetAnswerPlayer = "&nbsp;" . sassessment_splayer($sassessment->{'filesr' . $i}, "play_l_" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
                     else
                         $targetAnswerPlayer = "";
 
                     if ($response)
                         $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $targetAnswerPlayer . " " . $response->text . '</div>';
-
+                    else
+                        $o .= "No response";
 
                     $o .= html_writer::end_tag('div');
                 }

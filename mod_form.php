@@ -394,7 +394,7 @@ class mod_sassessment_mod_form extends moodleform_mod
               $.get(  "' . $CFG->wwwroot . '/mod/sassessment/" + $(this).attr("data-text"), function( data ) {
 
               });
-              $(this).parent().parent().parent().parent().remove();
+              $(this).parent().parent().remove();
 
           });
           </script>
