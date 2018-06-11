@@ -8,8 +8,6 @@ ABOUT
 --------
 This is version 3.x of the "Speaking assessment" module (sassessment).
 
-3.x release is compatible only with Moodle 3.0.
-
 The "sassessment" module is developed by
     Igor Nikulin, Paul Daniels and Nobuhiro Kumai.
 
