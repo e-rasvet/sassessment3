@@ -4387,6 +4387,10 @@ function sassessment_splayer($ids, $id = null, $idSub = null){
     else
         $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename."?".$idSub);
 
+    //if ($file->mimetype == "image/png" || $file->mimetype == "image/jpg" || $file->mimetype == "image/jpeg") {
+    //    $o = '<a href="'.$link.'" target="_blank">Audio</a>';
+    //}
+
     if ($id != null)
       $o = '<a href="'.$link.'" class="sm2_button" id="'.$id.'">Audio</a>';
     else
