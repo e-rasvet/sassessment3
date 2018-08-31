@@ -103,126 +103,132 @@ if ($a == "add" && isset($frm->useranswer) && is_array($frm->useranswer)) {
 * Adding mew item
 */
 if ($a == "add" && isset($frm->filewav) && is_array($frm->filewav)) {
-    $add = new stdClass;
-    $add->aid = $sassessment->id;
-    $add->uid = $USER->id;
-    $add->summary = $frm->summary;
+    $fullData = implode("", $frm->filewav) . implode("", $frm->filetext);
 
-    $text = "";
-    $comparetext_orig = "";
-    $comparetext_current = "";
+    if (!empty($fullData)){
 
-    if ($sassessment->audio == 1) { // Disable audio file saving if teacher uncheck checkbox
-        foreach ($frm->filewav as $k => $v) {
-            $add->{'file' . $k} = $v;
+        $add = new stdClass;
+        $add->aid = $sassessment->id;
+        $add->uid = $USER->id;
+        $add->summary = $frm->summary;
+
+        $text = "";
+        $comparetext_orig = "";
+        $comparetext_current = "";
+
+        if ($sassessment->audio == 1) { // Disable audio file saving if teacher uncheck checkbox
+            foreach ($frm->filewav as $k => $v) {
+                $add->{'file' . $k} = $v;
+            }
         }
-    }
 
 
-    if (is_array($frm->filetext))
-        foreach ($frm->filetext as $k => $v) {
-            $add->{'var' . $k} = $v;
-            $text .= $v . ". ";
+        if (is_array($frm->filetext))
+            foreach ($frm->filetext as $k => $v) {
+                $add->{'var' . $k} = $v;
+                $text .= $v . ". ";
 
-            $maxp = 0;
-            $maxi = 1;
-            $maxtext = "";
+                $maxp = 0;
+                $maxi = 1;
+                $maxtext = "";
 
-            if ($sampleresponses = $DB->get_records("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
-                foreach ($sampleresponses as $sampleresponse) {
-                    $percent = sassessment_similar_text($sampleresponse->text, $v);
-                    if ($maxp < $percent) {
-                        $maxi = $k;
-                        $maxp = $percent;
-                        $maxtext = $sampleresponse->text;
+                if ($sampleresponses = $DB->get_records("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
+                    foreach ($sampleresponses as $sampleresponse) {
+                        $percent = sassessment_similar_text($sampleresponse->text, $v);
+                        if ($maxp < $percent) {
+                            $maxi = $k;
+                            $maxp = $percent;
+                            $maxtext = $sampleresponse->text;
+                        }
                     }
                 }
-            }
 
-            $comparetext_orig .= $maxtext . " ";
-            $comparetext_current .= $v . " ";
+                $comparetext_orig .= $maxtext . " ";
+                $comparetext_current .= $v . " ";
 
-            //if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
+                //if ($sampleresponse = $DB->get_record("sassessment_responses", array("aid" => $sassessment->id, "iid" => $k))) {
                 //if (!empty($v)) {
-                    $add->{'per' . $k} = sassessment_similar_text($maxtext, $v);
+                $add->{'per' . $k} = sassessment_similar_text($maxtext, $v);
                 //}
-            //}
+                //}
 
-            if (is_nan($add->{'per' . $k})) {
-                $add->{'per' . $k} = 0;
+                if (is_nan($add->{'per' . $k})) {
+                    $add->{'per' . $k} = 0;
+                }
+            }
+
+        $add->analize = json_encode(sassessment_printanalizeform($text));
+
+        $total = 0;
+        $c = 0;
+        for ($i = 0; $i <= 10; $i++) {
+            if (isset($add->{'per' . $i})) {
+                $c++;
+                $total += $add->{'per' . $i};
             }
         }
 
-    $add->analize = json_encode(sassessment_printanalizeform($text));
+        $add->pertotal = round($total / $c);
 
-    $total = 0;
-    $c = 0;
-    for ($i=0;$i<=10;$i++){
-        if (isset($add->{'per' . $i})){
-            $c++;
-            $total += $add->{'per' . $i};
-        }
-    }
+        //$add->pertotal = round(sassessment_similar_text($comparetext_orig, $comparetext_current));
 
-    $add->pertotal = round($total / $c);
+        $add->timecreated = time();
 
-    //$add->pertotal = round(sassessment_similar_text($comparetext_orig, $comparetext_current));
-
-    $add->timecreated = time();
-
-    if (empty($frm->sid)) {
-        $DB->insert_record("sassessment_studdent_answers", $add);
-    } else {
-        $add->id = $frm->sid;
-        $DB->update_record("sassessment_studdent_answers", $add);
-    }
-
-    $sassessment->cmidnumber = $cm->id;
-
-    //Check max grade
-    if ($catdata = $DB->get_record("grade_items", array("courseid" => $sassessment->course, "iteminstance" => $sassessment->id, "itemmodule" => 'sassessment'))) {
-
-        if ($add->pertotal < 1) {
-            $add->pertotal = 1;
+        if (empty($frm->sid)) {
+            $DB->insert_record("sassessment_studdent_answers", $add);
+        } else {
+            $add->id = $frm->sid;
+            $DB->update_record("sassessment_studdent_answers", $add);
         }
 
-        $gradeRaw = round($catdata->grademax * $add->pertotal / 100);
+        $sassessment->cmidnumber = $cm->id;
 
-        $grade = array();
-        $grade[$add->uid] = new stdClass;
-        $grade[$add->uid]->id = $add->uid;
-        $grade[$add->uid]->userid = $add->uid;
-        $grade[$add->uid]->rawgrademax = $catdata->grademax;
-        $grade[$add->uid]->grademax = $catdata->grademax;
-        $grade[$add->uid]->rawgrade = $gradeRaw;//round($catdata->grademax * $add->pertotal / 100);
-        $grade[$add->uid]->feedback = "autograde";
-        $grade[$add->uid]->feedbackformat = 0;
+        //Check max grade
+        if ($catdata = $DB->get_record("grade_items", array("courseid" => $sassessment->course, "iteminstance" => $sassessment->id, "itemmodule" => 'sassessment'))) {
 
+            if ($add->pertotal < 1) {
+                $add->pertotal = 1;
+            }
 
-        if ($sassessment->grademethod == "rubricauto") {
-            /*
-            $grade_item = new grade_item(array("courseid" => $sassessment->course, "iteminstance"=> $sassessment->id, "itemmodule" => 'sassessment'));
+            $gradeRaw = round($catdata->grademax * $add->pertotal / 100);
 
-            $data = new stdClass;
-            $data->grademax = 100;
-            grade_item::set_properties($grade_item, $data);
-            $grade_item->rescale_grades_keep_percentage(0, 100, 0, 100, 'gradebook');
-            $grade_item->update();
+            $grade = array();
+            $grade[$add->uid] = new stdClass;
+            $grade[$add->uid]->id = $add->uid;
+            $grade[$add->uid]->userid = $add->uid;
+            $grade[$add->uid]->rawgrademax = $catdata->grademax;
+            $grade[$add->uid]->grademax = $catdata->grademax;
+            $grade[$add->uid]->rawgrade = $gradeRaw;//round($catdata->grademax * $add->pertotal / 100);
+            $grade[$add->uid]->feedback = "autograde";
+            $grade[$add->uid]->feedbackformat = 0;
 
 
-                $rawgrade       = $gradeRaw; //round($catdata->grademax * $percent/100);
-                $feedback       = "autograde";
-                $feedbackformat = FORMAT_MOODLE;
-                $usermodified   = $USER->id;
-                $datesubmitted  = null;
-                $dategraded     = null;
-                $grade_grade    = null;
+            if ($sassessment->grademethod == "rubricauto") {
+                /*
+                $grade_item = new grade_item(array("courseid" => $sassessment->course, "iteminstance"=> $sassessment->id, "itemmodule" => 'sassessment'));
 
-                if (!$grade_item->update_raw_grade($add->uid, $rawgrade, $sassessment, $feedback, $feedbackformat, $usermodified, $dategraded, $datesubmitted, $grade_grade)){
-                  echo "False";
-                }
-*/
-            sassessment_grade_item_update($sassessment, $grade);
+                $data = new stdClass;
+                $data->grademax = 100;
+                grade_item::set_properties($grade_item, $data);
+                $grade_item->rescale_grades_keep_percentage(0, 100, 0, 100, 'gradebook');
+                $grade_item->update();
+
+
+                    $rawgrade       = $gradeRaw; //round($catdata->grademax * $percent/100);
+                    $feedback       = "autograde";
+                    $feedbackformat = FORMAT_MOODLE;
+                    $usermodified   = $USER->id;
+                    $datesubmitted  = null;
+                    $dategraded     = null;
+                    $grade_grade    = null;
+
+                    if (!$grade_item->update_raw_grade($add->uid, $rawgrade, $sassessment, $feedback, $feedbackformat, $usermodified, $dategraded, $datesubmitted, $grade_grade)){
+                      echo "False";
+                    }
+    */
+                sassessment_grade_item_update($sassessment, $grade);
+            }
+
         }
 
     }
