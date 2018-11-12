@@ -33,11 +33,15 @@ require_once(dirname(__FILE__) . '/lib.php');
 require_once $CFG->dirroot . '/grade/lib.php';
 require_once $CFG->dirroot . '/grade/report/lib.php';
 
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$a = optional_param('a', 'list', PARAM_TEXT);
-$act = optional_param('act', NULL, PARAM_TEXT);
-$n = optional_param('n', 0, PARAM_INT);
-$upid = optional_param('upid', 0, PARAM_INT);
+
+$id               = optional_param('id', 0, PARAM_INT); // course_module ID, or
+$a                = optional_param('a', 'list', PARAM_TEXT);
+$act              = optional_param('act', NULL, PARAM_TEXT);
+$n                = optional_param('n', 0, PARAM_INT);
+$upid             = optional_param('upid', 0, PARAM_INT);
+$page             = optional_param('page', 0, PARAM_INT);
+
+
 
 if ($id) {
     $cm = get_coursemodule_from_id('sassessment', $id, 0, false, MUST_EXIST);
@@ -51,12 +55,22 @@ if ($id) {
     error('You must specify a course_module ID or an instance ID');
 }
 
+
+$countPerPage = 10;
+
+
+
+
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
+
+
 
 //add_to_log($course->id, 'sassessment', 'view', "view.php?id={$cm->id}", $sassessment->name, $cm->id);
 
 $frm = data_submitted();
+
+
 
 /*
 * Adding mew item
@@ -339,6 +353,12 @@ if ($a == "summary") {
 }
 
 if ($a == "list") {
+    $from = ($page + 1) * $countPerPage - $countPerPage;
+
+    if ($from < 0) {
+        $from = 0;
+    }
+
     if (($sassessment->grademethod == "rubric" || $sassessment->grademethod == "rubricauto") && $sassessment->humanevaluation == 1) {
         echo html_writer::start_tag('div');
         echo html_writer::link(new moodle_url('/mod/sassessment/submissions.php', array("id" => $id)), get_string("rubrics", "sassessment"));
@@ -380,10 +400,14 @@ if ($a == "list") {
 
 
     if (isset($aType)) {
-        $lists = $DB->get_records("sassessment_studdent_answers", array(), 'timecreated DESC');
+        $lists = $DB->get_records("sassessment_studdent_answers", array(), "timecreated DESC LIMIT {$from}, {$countPerPage}");
+        $listsCount = $DB->get_records("sassessment_studdent_answers", array(), "timecreated DESC");
     } else {
-        $lists = $DB->get_records("sassessment_studdent_answers", array("aid" => $sassessment->id), 'timecreated DESC');
+        $lists = $DB->get_records("sassessment_studdent_answers", array("aid" => $sassessment->id), "timecreated DESC LIMIT {$from}, {$countPerPage}");
+        $listsCount = $DB->get_records("sassessment_studdent_answers", array("aid" => $sassessment->id), "timecreated DESC");
     }
+
+    $totalcount = count($listsCount);
 
 
     foreach ($lists as $list) {
@@ -463,10 +487,22 @@ if ($a == "list") {
                     else
                         $targetAnswerPlayer = "";
 
+
+                    if (!empty($sassessment->{'file' . $i}))
+                        $targetPlayer = "&nbsp;" . sassessment_splayer($sassessment->{'file' . $i}, "play__" . $list->id . "_" . $i, $list->id . "_" . $i) . " &nbsp;";
+                    else
+                        $targetPlayer = "";
+
                     if ($response)
                         $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . $targetAnswerPlayer . " " . $response->text . '</div>';
                     else
-                        $o .= "No response";
+                        $o .= "<div style='font-size: small;color: #888;'><b>" . get_string("targetanswer", "sassessment") . ":</b> " . "No response" . '</div>';
+
+                    if ($sassessment->{'var' . $i})
+                        $o .= "<div style='font-size: small;color: #888;'><b>" . "Question" . ":</b> " . $targetPlayer . " " . $sassessment->{'var' . $i} . '</div>';
+                    else
+                        $o .= "<div style='font-size: small;color: #888;'><b>" . "Question" . ":</b> " . "No response" . '</div>';
+
 
                     $o .= html_writer::end_tag('div');
                 }
@@ -516,7 +552,13 @@ if ($a == "list") {
         }
     }
 
+    $pagingbar = new paging_bar($totalcount, $page, $countPerPage, "view.php?id={$id}&");
+
+    echo $OUTPUT->render($pagingbar);
+
     echo html_writer::table($table);
+
+    echo $OUTPUT->render($pagingbar);
 
 
     // Replace the following lines with you own code
