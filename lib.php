@@ -4292,18 +4292,21 @@ function sassessment_getfile($itemid){
 
 function sassessment_getfileid($itemid){
   global $DB, $CFG;
-  
-  if ($file = $DB->get_record("files", array("id" => $itemid))){
-    $contenthash = $file->contenthash;
-    $l1 = $contenthash[0].$contenthash[1];
-    $l2 = $contenthash[2].$contenthash[3];
-    $filepatch = $CFG->dataroot."/filedir/$l1/$l2/$contenthash";
-    
-    $file->fullpatch = $filepatch;
-    
-    return $file;
-  } else
-    return false;
+
+    $select = "itemid = :itemid AND filesize = :filesize";
+    $params = array('filesize'=>0, 'itemid'=>$itemid);
+
+    if ($file = $DB->record_exists_select('files', $select, $params)){
+        $contenthash = $file->contenthash;
+        $l1 = $contenthash[0].$contenthash[1];
+        $l2 = $contenthash[2].$contenthash[3];
+        $filepatch = $CFG->dataroot."/filedir/$l1/$l2/$contenthash";
+
+        $file->fullpatch = $filepatch;
+
+        return $file;
+    } else
+        return false;
 }
 
 
@@ -4373,11 +4376,11 @@ function sassessment_player_video($link, $mime = 'video/mp4', $poster = null, $i
 
 function sassessment_splayer($ids, $id = null, $idSub = null){
     global $DB, $CFG;
-    
+
     if ($file = sassessment_getfile($ids)){
-      
+
     } else if ($file = sassessment_getfileid($ids)){
-      
+
     } else {
       return false;
     }
@@ -4395,9 +4398,43 @@ function sassessment_splayer($ids, $id = null, $idSub = null){
       $o = '<a href="'.$link.'" class="sm2_button" id="'.$id.'">Audio</a>';
     else
       $o = '<a href="'.$link.'" class="sm2_button">Audio</a>';
-    
+
+    //$o = '<audio controls="controls" width="100"><source src="'.$link.'" type="audio/mpeg" />[not support]</audio>';
+
     return $o;
 }
+
+
+function sassessment_splayerTmp($ids, $id = null, $idSub = null){
+    global $DB, $CFG;
+
+    if ($file = sassessment_getfile($ids)){
+
+    } else if ($file = sassessment_getfileid($ids)){
+
+    } else {
+        return false;
+    }
+
+    if (empty($idSub))
+        $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename);
+    else
+        $link = new moodle_url("/pluginfile.php/".$file->contextid."/mod_sassessment/".$ids."/".$file->id."/".$file->filename."?".$idSub);
+
+    //if ($file->mimetype == "image/png" || $file->mimetype == "image/jpg" || $file->mimetype == "image/jpeg") {
+    //    $o = '<a href="'.$link.'" target="_blank">Audio</a>';
+    //}
+
+    if ($id != null)
+        $o = '<a href="'.$link.'" class="sm2_button" id="'.$id.'">Audio</a>';
+    else
+        $o = '<a href="'.$link.'" class="sm2_button">Audio</a>';
+
+    $o = '<audio controls="controls" width="100"><source src="'.$link.'" type="audio/mpeg" />[not support]</audio>';
+
+    return $o;
+}
+
 
 
 function sassessment_player_mp3($link, $mime = 'audio/mp3', $ids = 0){

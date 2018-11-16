@@ -251,11 +251,23 @@ function BasicMP3Player() {
 
 }
 
+console.log("SM2 ready for init");
+
 var basicMP3Player = null;
 
 soundManager.setup({
-  preferFlash: false,
+    url: "splayer/swf/",
+    consoleOnly: true,
+    debugMode: true,
+    debugFlash: false,
+    forceUseGlobalHTML5Audio: true,
+    preferFlash: false,
+    useConsole: true,
+    useHTML5Audio: true,
+    waitForWindowLoad: false,
   onready: function() {
-    basicMP3Player = new BasicMP3Player();
+      console.log("SM2 init start!");
+      basicMP3Player = new BasicMP3Player();
+      console.log("SM2 init success!");
   }
 });
