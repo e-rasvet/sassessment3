@@ -37,7 +37,7 @@
   if (has_capability('mod/sassessment:teacher', $context)) {
       $catdata  = $DB->get_record("grade_items", array("courseid" => $sassessment->course, "iteminstance"=> $sassessment->id, "itemmodule" => 'sassessment'));
       
-      $gradesdata               = new object;
+      $gradesdata               = new stdClass();
       $gradesdata->itemid       = $catdata->id;
       $gradesdata->userid       = $sassessmentfiles->uid;
       $gradesdata->rawgrade     = $value;
